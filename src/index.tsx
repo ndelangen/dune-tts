@@ -17,13 +17,14 @@ onLoad = () => {
     cards: [{ index: 1, name: "Test Card" }],
   });
 
-  // log(card);
   const s = async () => {
     const out = await Forge.spawnObject(card, {
       position: { x: 0, y: 5, z: 0 },
     });
 
     log(out);
+
+    out.locked = true;
 
     return;
   };
