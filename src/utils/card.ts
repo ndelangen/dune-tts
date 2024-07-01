@@ -10,6 +10,19 @@ interface CardInput {
   back: string;
 }
 
+export function define<T extends CardInput>(
+  input: T | T[]
+): CardCustomData | DeckCustomData {
+  switch (true) {
+    case Array.isArray(input) && input.length > 1:
+      return defineDeck(input);
+    case Array.isArray(input):
+      return defineCard(input[0]);
+    default:
+      return defineCard(input);
+  }
+}
+
 export function defineCard(input: CardInput) {
   deckIndex++;
   return {

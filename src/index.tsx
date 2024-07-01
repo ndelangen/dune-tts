@@ -1,11 +1,11 @@
 // import { render, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
 import { Forge } from "@typed-tabletop-simulator/lib";
-import { defineCard } from "./utils/card";
-import { defineDeck } from "utils/card";
+import * as card from "utils/card";
 
 // import { App } from "App";
 
 onLoad = () => {
+  log("HELLO");
   // const ui = render(Global, <App />);
 
   // const deck = Forge.createDeck({
@@ -85,7 +85,7 @@ onLoad = () => {
 
   const d = async () => {
     await Forge.spawnObject(
-      defineCard({
+      card.define({
         front:
           "http://cloud-3.steamusercontent.com/ugc/2551934014981172056/B7D2C194B49085F191009A9E2AC10D404D674691/",
         back: "http://cloud-3.steamusercontent.com/ugc/2495638295534742758/A997C7F6F7D52EAFD55ABACDD9C9AEE2F3AD668B/",
@@ -97,7 +97,7 @@ onLoad = () => {
       }
     );
     await Forge.spawnObject(
-      defineCard({
+      card.define({
         front:
           "http://cloud-3.steamusercontent.com/ugc/2551934014981172056/B7D2C194B49085F191009A9E2AC10D404D674691/",
         back: "http://cloud-3.steamusercontent.com/ugc/2495638295534742758/A997C7F6F7D52EAFD55ABACDD9C9AEE2F3AD668B/",
@@ -109,7 +109,7 @@ onLoad = () => {
       }
     );
     await Forge.spawnObject(
-      defineDeck([
+      card.define([
         {
           front:
             "http://cloud-3.steamusercontent.com/ugc/2551934014981172056/B7D2C194B49085F191009A9E2AC10D404D674691/",
