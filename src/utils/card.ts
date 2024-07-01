@@ -8,6 +8,7 @@ const getCardId = (deckId: number, card: number) => {
 interface CardInput {
   front: string;
   back: string;
+  name?: string;
 }
 
 export function define<T extends CardInput>(
@@ -39,7 +40,7 @@ export function defineCard(input: CardInput) {
       scaleY: 1,
       scaleZ: 1,
     },
-    Nickname: "",
+    Nickname: input.name || "",
     Description: "",
     GMNotes: "",
     AltLookAngle: {
@@ -48,9 +49,9 @@ export function defineCard(input: CardInput) {
       z: 0,
     },
     ColorDiffuse: {
-      r: 0.713235259,
-      g: 0.713235259,
-      b: 0.713235259,
+      r: 1.0,
+      g: 1.0,
+      b: 1.0,
     },
     LayoutGroupSortIndex: 0,
     Value: 0,
@@ -62,7 +63,7 @@ export function defineCard(input: CardInput) {
     DragSelectable: true,
     Autoraise: true,
     Sticky: true,
-    Tooltip: true,
+    Tooltip: !!input.name,
     GridProjection: false,
     HideWhenFaceDown: true,
     Hands: true,
@@ -117,9 +118,9 @@ export function defineDeck(input: CardInput[]) {
       z: 0,
     },
     ColorDiffuse: {
-      r: 0.713235259,
-      g: 0.713235259,
-      b: 0.713235259,
+      r: 1.0,
+      g: 1.0,
+      b: 1.0,
     },
     LayoutGroupSortIndex: 0,
     Value: 0,
@@ -170,7 +171,7 @@ export function defineDeck(input: CardInput[]) {
         scaleY: 1,
         scaleZ: 1,
       },
-      Nickname: "",
+      Nickname: result.card.name || "",
       Description: "",
       GMNotes: "",
       AltLookAngle: {
@@ -179,9 +180,9 @@ export function defineDeck(input: CardInput[]) {
         z: 0,
       },
       ColorDiffuse: {
-        r: 0.713235259,
-        g: 0.713235259,
-        b: 0.713235259,
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
       },
       LayoutGroupSortIndex: 0,
       Value: 0,
@@ -193,7 +194,7 @@ export function defineDeck(input: CardInput[]) {
       DragSelectable: true,
       Autoraise: true,
       Sticky: true,
-      Tooltip: true,
+      Tooltip: !!result.card.name,
       GridProjection: false,
       HideWhenFaceDown: true,
       Hands: true,
