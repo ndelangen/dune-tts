@@ -1,12 +1,4 @@
-const round = (value: number, precision = 4) => {
-  const factor = 10 ** precision;
-  const result = Math.round(value * factor) / factor;
-
-  if (result === -0) {
-    return 0;
-  }
-  return result;
-};
+import { round } from "./math";
 
 export function getRingPositions(center: Vector, radius: number, count: number, startDegree = 0) {
   const positions: Vector[] = [];

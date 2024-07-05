@@ -1,12 +1,4 @@
-const round = (value: number, precision = 4) => {
-  const factor = 10 ** precision;
-  const result = Math.round(value * factor) / factor;
-
-  if (result === -0) {
-    return 0;
-  }
-  return result;
-};
+import { round } from "./math";
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
 const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
