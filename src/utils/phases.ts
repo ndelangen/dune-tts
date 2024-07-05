@@ -1,6 +1,6 @@
-import { Api, State } from "./phases-types";
+import { Api, Phase, State } from "./phases-types";
 
-export function initApi(initialState: State) {
+export function initApi(initialState: State, phaseList: Record<string, Phase>) {
   const state: State = initialState;
   let busy = false;
 
@@ -11,7 +11,8 @@ export function initApi(initialState: State) {
       }
 
       busy = true;
-      const phase = state.phases[state.phase];
+      const phaseName = state.phases[state.phase];
+      const phase = phaseList[phaseName];
       const ok = await phase.exitForwards(state, api);
       if (!ok) {
         busy = false;
@@ -25,7 +26,8 @@ export function initApi(initialState: State) {
         state.phase++;
       }
 
-      const nextPhase = state.phases[state.phase];
+      const nextPhaseName = state.phases[state.phase];
+      const nextPhase = phaseList[nextPhaseName];
       await nextPhase.enterForwards(state, api);
       busy = false;
     },
@@ -36,7 +38,8 @@ export function initApi(initialState: State) {
       }
 
       busy = true;
-      const phase = state.phases[state.phase];
+      const phaseName = state.phases[state.phase];
+      const phase = phaseList[phaseName];
       const ok = await phase.exitBackwards(state, api);
       if (!ok) {
         return;
@@ -52,7 +55,8 @@ export function initApi(initialState: State) {
       } else {
         state.phase--;
       }
-      const nextPhase = state.phases[state.phase];
+      const nextPhaseName = state.phases[state.phase];
+      const nextPhase = phaseList[nextPhaseName];
       await nextPhase.enterBackwards(state, api);
       busy = false;
     },
@@ -60,7 +64,11 @@ export function initApi(initialState: State) {
     setPhases: async (phases, index = 0) => {
       state.phases = phases;
       state.phase = index;
-      const phase = state.phases[state.phase];
+      const phaseName = state.phases[state.phase];
+      const phase = phaseList[phaseName];
+      if (!phase) {
+        throw new Error(`Phase not found: ${phaseName}`);
+      }
       await phase.enterForwards(state, api);
     },
 

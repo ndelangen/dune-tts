@@ -9,12 +9,12 @@ export interface Phase {
 export interface Api {
   forward: () => Promise<void>;
   backward: () => Promise<void>;
-  setPhases: (phases: Phase[], index?: number) => Promise<void>;
+  setPhases: (phases: string[], index?: number) => Promise<void>;
   getState: () => State;
 }
 
 export interface State {
   phase: number;
   turn: number;
-  phases: Phase[];
+  phases: string[];
 }

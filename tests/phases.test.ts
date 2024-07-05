@@ -7,14 +7,14 @@ import { initApi } from "../src/utils/phases";
 import { Phase } from "../src/utils/phases-types";
 
 const first: Phase = {
-  name: "first test phase",
+  name: "first",
   enterForwards: fn(async () => {}),
   exitForwards: fn(async () => true),
   enterBackwards: fn(async () => {}),
   exitBackwards: fn(async () => false),
 };
 const last: Phase = {
-  name: "last test phase",
+  name: "last",
   enterForwards: fn(async () => {}),
   exitForwards: fn(async () => false),
   enterBackwards: fn(async () => {}),
@@ -29,8 +29,8 @@ const initialState = Object.freeze({
 
 describe("setPhases", () => {
   test("no index", async () => {
-    const api = initApi({ ...initialState });
-    await api.setPhases([first, last]);
+    const api = initApi({ ...initialState }, { first, last });
+    await api.setPhases([first.name, last.name]);
     expect(api.getState().phases).toHaveLength(2);
 
     // calls the first phase's enterForwards
@@ -38,8 +38,8 @@ describe("setPhases", () => {
   });
 
   test("with index", async () => {
-    const api = initApi({ ...initialState, phase: 0 });
-    await api.setPhases([first, last], 1);
+    const api = initApi({ ...initialState, phase: 0 }, { first, last });
+    await api.setPhases([first.name, last.name], 1);
     expect(api.getState().phase).toEqual(1);
 
     // calls the first phase's enterForwards
@@ -49,8 +49,8 @@ describe("setPhases", () => {
 
 describe("progression", () => {
   test("forward", async () => {
-    const api = initApi({ ...initialState });
-    await api.setPhases([first, last]);
+    const api = initApi({ ...initialState }, { first, last });
+    await api.setPhases([first.name, last.name]);
 
     expect(api.getState().phase).toBe(0);
 
@@ -59,8 +59,8 @@ describe("progression", () => {
   });
 
   test("blocked forward", async () => {
-    const api = initApi({ ...initialState });
-    await api.setPhases([first, last]);
+    const api = initApi({ ...initialState }, { first, last });
+    await api.setPhases([first.name, last.name]);
 
     expect(api.getState().phase).toBe(0);
 
@@ -72,8 +72,8 @@ describe("progression", () => {
   });
 
   test("blocked backward", async () => {
-    const api = initApi({ ...initialState });
-    await api.setPhases([first, last]);
+    const api = initApi({ ...initialState }, { first, last });
+    await api.setPhases([first.name, last.name]);
 
     expect(api.getState().phase).toBe(0);
 
@@ -85,43 +85,48 @@ describe("progression", () => {
 describe("order of operations", () => {
   test("forwards", async () => {
     const log: string[] = [];
-    const api = initApi({ ...initialState });
-    await api.setPhases([
+    const api = initApi(
+      { ...initialState },
       {
-        name: "a",
-        enterForwards: fn(async () => {
-          log.push("a enter forwards");
-        }),
-        exitForwards: fn(async () => {
-          log.push("a exit forwards");
-          return true;
-        }),
-        enterBackwards: fn(async () => {
-          log.push("a enter backwards");
-        }),
-        exitBackwards: fn(async () => {
-          log.push("a exit backwards");
-          return true;
-        }),
-      },
-      {
-        name: "b",
-        enterForwards: fn(async () => {
-          log.push("b enter forwards");
-        }),
-        exitForwards: fn(async () => {
-          log.push("b exit forwards");
-          return true;
-        }),
-        enterBackwards: fn(async () => {
-          log.push("b enter backwards");
-        }),
-        exitBackwards: fn(async () => {
-          log.push("b exit backwards");
-          return true;
-        }),
-      },
-    ]);
+        first,
+        last,
+        a: {
+          name: "a",
+          enterForwards: fn(async () => {
+            log.push("a enter forwards");
+          }),
+          exitForwards: fn(async () => {
+            log.push("a exit forwards");
+            return true;
+          }),
+          enterBackwards: fn(async () => {
+            log.push("a enter backwards");
+          }),
+          exitBackwards: fn(async () => {
+            log.push("a exit backwards");
+            return true;
+          }),
+        },
+        b: {
+          name: "b",
+          enterForwards: fn(async () => {
+            log.push("b enter forwards");
+          }),
+          exitForwards: fn(async () => {
+            log.push("b exit forwards");
+            return true;
+          }),
+          enterBackwards: fn(async () => {
+            log.push("b enter backwards");
+          }),
+          exitBackwards: fn(async () => {
+            log.push("b exit backwards");
+            return true;
+          }),
+        },
+      }
+    );
+    await api.setPhases(["a", "b"]);
 
     expect(api.getState().phase).toBe(0);
 
@@ -135,43 +140,46 @@ describe("order of operations", () => {
 
   test("backwards", async () => {
     const log: string[] = [];
-    const api = initApi({ ...initialState });
-    await api.setPhases([
+    const api = initApi(
+      { ...initialState },
       {
-        name: "a",
-        enterForwards: fn(async () => {
-          log.push("a enter forwards");
-        }),
-        exitForwards: fn(async () => {
-          log.push("a exit forwards");
-          return true;
-        }),
-        enterBackwards: fn(async () => {
-          log.push("a enter backwards");
-        }),
-        exitBackwards: fn(async () => {
-          log.push("a exit backwards");
-          return true;
-        }),
-      },
-      {
-        name: "b",
-        enterForwards: fn(async () => {
-          log.push("b enter forwards");
-        }),
-        exitForwards: fn(async () => {
-          log.push("b exit forwards");
-          return true;
-        }),
-        enterBackwards: fn(async () => {
-          log.push("b enter backwards");
-        }),
-        exitBackwards: fn(async () => {
-          log.push("b exit backwards");
-          return true;
-        }),
-      },
-    ]);
+        a: {
+          name: "a",
+          enterForwards: fn(async () => {
+            log.push("a enter forwards");
+          }),
+          exitForwards: fn(async () => {
+            log.push("a exit forwards");
+            return true;
+          }),
+          enterBackwards: fn(async () => {
+            log.push("a enter backwards");
+          }),
+          exitBackwards: fn(async () => {
+            log.push("a exit backwards");
+            return true;
+          }),
+        },
+        b: {
+          name: "b",
+          enterForwards: fn(async () => {
+            log.push("b enter forwards");
+          }),
+          exitForwards: fn(async () => {
+            log.push("b exit forwards");
+            return true;
+          }),
+          enterBackwards: fn(async () => {
+            log.push("b enter backwards");
+          }),
+          exitBackwards: fn(async () => {
+            log.push("b exit backwards");
+            return true;
+          }),
+        },
+      }
+    );
+    await api.setPhases(["a", "b"]);
 
     expect(api.getState().phase).toBe(0);
     await api.forward();
@@ -191,23 +199,26 @@ describe("order of operations", () => {
 
 describe("cycle turns", () => {
   test("forward", async () => {
-    const api = initApi({ ...initialState });
-    await api.setPhases([
+    const api = initApi(
+      { ...initialState },
       {
-        name: "a",
-        enterForwards: fn(async () => {}),
-        exitForwards: fn(async () => true),
-        enterBackwards: fn(async () => {}),
-        exitBackwards: fn(async () => true),
-      },
-      {
-        name: "c",
-        enterForwards: fn(async () => {}),
-        exitForwards: fn(async () => true),
-        enterBackwards: fn(async () => {}),
-        exitBackwards: fn(async () => true),
-      },
-    ]);
+        a: {
+          name: "a",
+          enterForwards: fn(async () => {}),
+          exitForwards: fn(async () => true),
+          enterBackwards: fn(async () => {}),
+          exitBackwards: fn(async () => true),
+        },
+        c: {
+          name: "c",
+          enterForwards: fn(async () => {}),
+          exitForwards: fn(async () => true),
+          enterBackwards: fn(async () => {}),
+          exitBackwards: fn(async () => true),
+        },
+      }
+    );
+    await api.setPhases(["a", "c"]);
 
     expect(api.getState().phase).toBe(0);
     expect(api.getState().turn).toBe(0);
@@ -222,23 +233,26 @@ describe("cycle turns", () => {
   });
 
   test("backward", async () => {
-    const api = initApi({ ...initialState, turn: 1 });
-    await api.setPhases([
+    const api = initApi(
+      { ...initialState, turn: 1 },
       {
-        name: "a",
-        enterForwards: fn(async () => {}),
-        exitForwards: fn(async () => true),
-        enterBackwards: fn(async () => {}),
-        exitBackwards: fn(async () => true),
-      },
-      {
-        name: "c",
-        enterForwards: fn(async () => {}),
-        exitForwards: fn(async () => true),
-        enterBackwards: fn(async () => {}),
-        exitBackwards: fn(async () => true),
-      },
-    ]);
+        a: {
+          name: "a",
+          enterForwards: fn(async () => {}),
+          exitForwards: fn(async () => true),
+          enterBackwards: fn(async () => {}),
+          exitBackwards: fn(async () => true),
+        },
+        c: {
+          name: "c",
+          enterForwards: fn(async () => {}),
+          exitForwards: fn(async () => true),
+          enterBackwards: fn(async () => {}),
+          exitBackwards: fn(async () => true),
+        },
+      }
+    );
+    await api.setPhases(["a", "c"]);
 
     expect(api.getState().phase).toBe(0);
     expect(api.getState().turn).toBe(1);
@@ -259,8 +273,8 @@ describe("cycle turns", () => {
 
 describe("rate limiting", () => {
   test("forward", async () => {
-    const api = initApi({ ...initialState });
-    await api.setPhases([first, last]);
+    const api = initApi({ ...initialState }, { first, last });
+    await api.setPhases([first.name, last.name]);
 
     expect(api.getState().phase).toBe(0);
 
@@ -277,8 +291,8 @@ describe("rate limiting", () => {
   });
 
   test("backward", async () => {
-    const api = initApi({ ...initialState });
-    await api.setPhases([first, last], 1);
+    const api = initApi({ ...initialState }, { first, last });
+    await api.setPhases([first.name, last.name], 1);
 
     expect(api.getState().phase).toBe(1);
 

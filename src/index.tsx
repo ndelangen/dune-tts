@@ -3,19 +3,36 @@ import { Forge } from "@typed-tabletop-simulator/lib";
 import * as card from "./objects/card";
 import { fetch } from "./utils/fetch";
 import { initApi } from "./utils/phases";
+import * as drafting from "phases/drafting";
+import * as draftingTrading from "phases/draft-trading";
+import { Phase } from "utils/phases-types";
 
 // import { App } from "App";
 
-onLoad = () => {
+let state = { turn: 0, phase: 0, phases: [drafting.phase.name, draftingTrading.phase.name] };
+
+onSave = () => {
+  return JSON.encode(state);
+};
+
+const PHASES = [drafting.phase, draftingTrading.phase].reduce<Record<string, Phase>>((acc, phase) => {
+  acc[phase.name] = phase;
+  return acc;
+}, {});
+
+const BASEURL = "https://cdn.jsdelivr.net/gh/ndelangen/dune-assets@main/";
+
+onLoad = (script_state) => {
   // const ui = render(Global, <App />);
+  log({ script_state });
 
   const d = async () => {
-    const api = initApi({ turn: 0, phase: 0, phases: [] });
-    const data: any = await fetch("https://cdn.jsdelivr.net/gh/ndelangen/dune-assets@main/generated/index.json");
+    const api = initApi(state, PHASES);
+    const data: any = await fetch(BASEURL + "generated/index.json");
 
     const cards = Object.values(data.treachery).map((front) => ({
-      front: "https://cdn.jsdelivr.net/gh/ndelangen/dune-assets@main/" + front,
-      back: "https://cdn.jsdelivr.net/gh/ndelangen/dune-assets@main/" + data.backs.treachery,
+      front: BASEURL + front,
+      back: BASEURL + data.backs.treachery,
     }));
 
     await Forge.spawnObject(card.define(cards), {
