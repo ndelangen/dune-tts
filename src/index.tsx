@@ -5,11 +5,11 @@ import { fetch } from "./utils/fetch";
 import { initApi } from "./utils/phases";
 import * as drafting from "phases/drafting";
 import * as draftingTrading from "phases/draft-trading";
-import { Phase } from "utils/phases-types";
+import { Phase, State } from "utils/phases-types";
 
 // import { App } from "App";
 
-let state = { turn: 0, phase: 0, phases: [drafting.phase.name, draftingTrading.phase.name] };
+let state: State = { turn: 0, phase: 0, phases: [drafting.phase.name, draftingTrading.phase.name] };
 
 onSave = () => {
   return JSON.encode(state);
@@ -24,7 +24,10 @@ const BASEURL = "https://cdn.jsdelivr.net/gh/ndelangen/dune-assets@main/";
 
 onLoad = (script_state) => {
   // const ui = render(Global, <App />);
-  log({ script_state });
+
+  if (script_state !== "" && script_state !== undefined && script_state !== null) {
+    state = JSON.decode(script_state) as State;
+  }
 
   const d = async () => {
     const api = initApi(state, PHASES);
