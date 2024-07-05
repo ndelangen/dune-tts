@@ -27,6 +27,7 @@ onLoad = (script_state) => {
 
   if (script_state !== "" && script_state !== undefined && script_state !== null) {
     state = JSON.decode(script_state) as State;
+    log({ state });
   }
 
   const d = async () => {
