@@ -1,32 +1,34 @@
 /// <reference types="bun" />
+/// <reference types="@typed-tabletop-simulator/declaration" />
+
 import { expect, test, describe, mock as fn } from "bun:test";
 
-import { initApi } from "../src/phases/_index";
-import { Phase } from "../src/phases/_types";
+import { initApi } from "../src/utils/phases";
+import { Phase } from "../src/utils/phases-types";
 
-describe("Phases", () => {
-  const first: Phase = {
-    name: "first test phase",
-    enterForwards: fn(async () => {}),
-    exitForwards: fn(async () => true),
-    enterBackwards: fn(async () => {}),
-    exitBackwards: fn(async () => false),
-  };
-  const last: Phase = {
-    name: "last test phase",
-    enterForwards: fn(async () => {}),
-    exitForwards: fn(async () => false),
-    enterBackwards: fn(async () => {}),
-    exitBackwards: fn(async () => true),
-  };
+const first: Phase = {
+  name: "first test phase",
+  enterForwards: fn(async () => {}),
+  exitForwards: fn(async () => true),
+  enterBackwards: fn(async () => {}),
+  exitBackwards: fn(async () => false),
+};
+const last: Phase = {
+  name: "last test phase",
+  enterForwards: fn(async () => {}),
+  exitForwards: fn(async () => false),
+  enterBackwards: fn(async () => {}),
+  exitBackwards: fn(async () => true),
+};
 
-  const initialState = {
-    phase: 0,
-    turn: 0,
-    phases: [],
-  };
+const initialState = Object.freeze({
+  phase: 0,
+  turn: 0,
+  phases: [],
+});
 
-  test("set phases", async () => {
+describe("setPhases", () => {
+  test("no index", async () => {
     const api = initApi({ ...initialState });
     await api.setPhases([first, last]);
     expect(api.getState().phases).toHaveLength(2);
@@ -35,7 +37,7 @@ describe("Phases", () => {
     expect(first.enterForwards).toHaveBeenCalledTimes(1);
   });
 
-  test("set phases, with index", async () => {
+  test("with index", async () => {
     const api = initApi({ ...initialState, phase: 0 });
     await api.setPhases([first, last], 1);
     expect(api.getState().phase).toEqual(1);
@@ -43,8 +45,10 @@ describe("Phases", () => {
     // calls the first phase's enterForwards
     expect(first.enterForwards).toHaveBeenCalledTimes(1);
   });
+});
 
-  test("forward phases", async () => {
+describe("progression", () => {
+  test("forward", async () => {
     const api = initApi({ ...initialState });
     await api.setPhases([first, last]);
 
@@ -54,7 +58,7 @@ describe("Phases", () => {
     expect(api.getState().phase).toBe(1);
   });
 
-  test("phase block forward", async () => {
+  test("blocked forward", async () => {
     const api = initApi({ ...initialState });
     await api.setPhases([first, last]);
 
@@ -67,7 +71,7 @@ describe("Phases", () => {
     expect(api.getState().phase).toBe(1);
   });
 
-  test("phase block backward", async () => {
+  test("blocked backward", async () => {
     const api = initApi({ ...initialState });
     await api.setPhases([first, last]);
 
@@ -76,8 +80,10 @@ describe("Phases", () => {
     await api.backward();
     expect(api.getState().phase).toBe(0);
   });
+});
 
-  test("order of operations forwards", async () => {
+describe("order of operations", () => {
+  test("forwards", async () => {
     const log: string[] = [];
     const api = initApi({ ...initialState });
     await api.setPhases([
@@ -127,7 +133,7 @@ describe("Phases", () => {
     expect(log).toEqual(["a exit forwards", "b enter forwards"]);
   });
 
-  test("order of operations backwards", async () => {
+  test("backwards", async () => {
     const log: string[] = [];
     const api = initApi({ ...initialState });
     await api.setPhases([
@@ -181,8 +187,10 @@ describe("Phases", () => {
       "a enter backwards",
     ]);
   });
+});
 
-  test("turns forward", async () => {
+describe("cycle turns", () => {
+  test("forward", async () => {
     const api = initApi({ ...initialState });
     await api.setPhases([
       {
@@ -213,7 +221,7 @@ describe("Phases", () => {
     expect(api.getState().turn).toBe(1);
   });
 
-  test("turns forward", async () => {
+  test("backward", async () => {
     const api = initApi({ ...initialState, turn: 1 });
     await api.setPhases([
       {
@@ -247,8 +255,10 @@ describe("Phases", () => {
     expect(api.getState().phase).toBe(0);
     expect(api.getState().turn).toBe(0);
   });
+});
 
-  test("rate limiting", async () => {
+describe("rate limiting", () => {
+  test("forward", async () => {
     const api = initApi({ ...initialState });
     await api.setPhases([first, last]);
 
@@ -264,5 +274,23 @@ describe("Phases", () => {
     // now we await it to be sure the state was updated
     await f1;
     expect(api.getState().phase).toBe(1);
+  });
+
+  test("backward", async () => {
+    const api = initApi({ ...initialState });
+    await api.setPhases([first, last], 1);
+
+    expect(api.getState().phase).toBe(1);
+
+    // this inherent race-condition is the test
+    // we want the first to be in progress,
+    const f1 = api.backward();
+
+    // the second should hit the `busy` check
+    await api.backward();
+
+    // now we await it to be sure the state was updated
+    await f1;
+    expect(api.getState().phase).toBe(0);
   });
 });

@@ -17,6 +17,9 @@
     "typescript": "~5.5.2",
     "typescript-to-lua": "~1.26.0"
   },
+  "prettier": {
+    "printWidth": 120
+  },
   "dependencies": {
     "@typed-tabletop-simulator/lib": "^0.0.9",
     "@types/bun": "^1.1.6"

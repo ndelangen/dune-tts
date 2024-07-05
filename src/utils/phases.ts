@@ -1,10 +1,4 @@
-import { Api, State } from "./_types";
-
-/**
- * maybe add some functionality where spamming 'forward' won't be permitted until the previous was resolved
- * maybe add a 'busy' flag to the state?
- * it is expected for forward to call setPhases
- */
+import { Api, State } from "./phases-types";
 
 export function initApi(initialState: State) {
   const state: State = initialState;

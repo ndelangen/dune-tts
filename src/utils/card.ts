@@ -11,9 +11,7 @@ interface CardInput {
   name?: string;
 }
 
-export function define<T extends CardInput>(
-  input: T | T[]
-): CardCustomData | DeckCustomData {
+export function define<T extends CardInput>(input: T | T[]): CardCustomData | DeckCustomData {
   switch (true) {
     case Array.isArray(input) && input.length > 1:
       return defineDeck(input);

@@ -1,4 +1,4 @@
-import { type Phase } from "./_types";
+import { type Phase } from "../utils/phases-types";
 
 const name = "second";
 
