@@ -9,7 +9,7 @@ import { Phase, State } from "utils/phases-types";
 
 // import { App } from "App";
 
-let state: State = { turn: 0, phase: 0, phases: [drafting.phase.name, draftingTrading.phase.name] };
+let state: State = { turn: 0, phase: 0, phases: [] };
 
 onSave = () => {
   return JSON.encode(state);
@@ -27,23 +27,30 @@ onLoad = (script_state) => {
 
   if (script_state !== "" && script_state !== undefined && script_state !== null) {
     state = JSON.decode(script_state) as State;
-    log({ state });
   }
 
   const d = async () => {
     const api = initApi(state, PHASES);
     const data: any = await fetch(BASEURL + "generated/index.json");
 
-    const cards = Object.values(data.treachery).map((front) => ({
-      front: BASEURL + front,
-      back: BASEURL + data.backs.treachery,
-    }));
+    if (state.phases.length === 0) {
+      state.phases = ["drafting", "draft-trading"];
+    }
 
-    await Forge.spawnObject(card.define(cards), {
-      position: { x: 0, y: 5, z: 0 },
-      rotation: { x: 0, y: 180, z: 0 },
-      scale: { x: 1, y: 1, z: 1 },
-    });
+    if (state.turn === 0 && state.phase === 0) {
+      await api.setPhases(state.phases);
+    }
+
+    // const cards = Object.values(data.treachery).map((front) => ({
+    //   front: BASEURL + front,
+    //   back: BASEURL + data.backs.treachery,
+    // }));
+
+    // await Forge.spawnObject(card.define(cards), {
+    //   position: { x: 0, y: 5, z: 0 },
+    //   rotation: { x: 0, y: 180, z: 0 },
+    //   scale: { x: 1, y: 1, z: 1 },
+    // });
 
     // await Forge.spawnObject(
     //   card.define({
