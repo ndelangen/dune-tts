@@ -1,6 +1,8 @@
 // import { render, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
 import { Forge } from "@typed-tabletop-simulator/lib";
-import * as card from "./utils/card";
+import * as card from "./objects/card";
+import { fetch } from "./utils/fetch";
+import { initApi } from "./utils/phases";
 
 // import { App } from "App";
 
@@ -8,6 +10,11 @@ onLoad = () => {
   // const ui = render(Global, <App />);
 
   const d = async () => {
+    const api = initApi({ turn: 0, phase: 0, phases: [] });
+    const data = await fetch("https://jsonplaceholder.typicode.com/todos/1");
+
+    log({ data });
+
     await Forge.spawnObject(
       card.define({
         front: "http://cloud-3.steamusercontent.com/ugc/2551934014981172056/B7D2C194B49085F191009A9E2AC10D404D674691/",
