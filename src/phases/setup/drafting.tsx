@@ -1,7 +1,9 @@
+import { applyUi, render, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
 import { Forge, waitFrames, waitTime } from "@typed-tabletop-simulator/lib";
 import { getArchPositions, getRingPositions, getSlottedRingPositions } from "../../utils/circle";
 import { Api, State, type Phase } from "../../utils/phases-types";
 import * as disc from "../../objects/disc";
+import { App } from "../../App";
 
 const name = "drafting";
 
@@ -15,6 +17,16 @@ async function setup(s: State) {
   const names = Object.keys(s.data.factions);
   const count = factions.length;
   const positions = getRingPositions(center, 5, count);
+
+  const info = await Forge.spawnObject(disc.simple({ name: "center" }), {
+    position: center,
+    rotation: Vector(0, 180, 0),
+    scale: Vector(1, 1, 1),
+  });
+  info.setColorTint({ r: 0.5, g: 0.5, b: 0.5, a: 0.0 });
+  info.interactable = false;
+
+  applyUi(info, <App list={["AAA", "BBB", "CCC"]} />);
 
   const tokens: TTSObject[] = [];
 
@@ -56,16 +68,42 @@ async function setup(s: State) {
   broadcastToAll("Flip a faction token to draft it");
   await waitTime(1);
 
+  const players = Player.getPlayers().filter((p) => p.seated && p.color !== "Black");
+
   const timer = Wait.time(
     () => {
-      const c = tokens.filter((t) => t.getDescription() !== "");
-      log(c.length + " factions have been drafted");
+      const playersThatDrafted = players.filter((p) => {
+        return tokens.some((t) => {
+          return t.getDescription().includes(p.steam_name);
+        });
+      });
+      const remaining = players.filter((p) => !playersThatDrafted.includes(p));
+
+      const messages = [
+        //
+        ...playersThatDrafted.map(
+          (p) =>
+            p.steam_name +
+            ": " +
+            tokens
+              .filter((t) => t.getDescription().includes(p.steam_name))
+              .map((t) => t.getName())
+              .join(",")
+        ),
+        ...remaining.map((p) => p.steam_name + ": nothing yet"),
+      ];
+
+      // const c = tokens.filter((t) => t.getDescription() !== "");
+      // const r = c.map((t) => t.getDescription().replace("drafted by ", "") + " drafted: " + t.getName());
+      if (messages.length > 0) {
+        applyUi(info, <App list={messages} />);
+      }
     },
     0.2,
     99999
   );
 
-  await waitTime(5);
+  await waitTime(150);
   Wait.stop(timer);
 
   await waitTime(1);

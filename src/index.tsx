@@ -8,7 +8,7 @@ import * as draftingTrading from "./phases/setup/trading";
 import { Phase, State } from "./utils/phases-types";
 import { BASEURL } from "utils/BASEURL";
 
-import { App } from "App";
+import { App } from "./App";
 
 let state: State = { turn: 0, phase: 0, phases: [], data: null };
 

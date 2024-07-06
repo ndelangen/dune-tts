@@ -289,3 +289,75 @@ function defineStack(input: DiscInput) {
     ],
   };
 }
+
+interface SimpleInput {
+  name?: string;
+}
+
+export function simple(input: SimpleInput) {
+  return {
+    GUID: "a1dafa",
+    Name: "Custom_Model",
+    Transform: {
+      posX: 0.0,
+      posY: 0.0,
+      posZ: 0.0,
+      rotX: 0.0,
+      rotY: 180.0,
+      rotZ: 0.0,
+      scaleX: 1,
+      scaleY: 2,
+      scaleZ: 1,
+    },
+    Nickname: input.name || "",
+    Description: "",
+    GMNotes: "",
+    AltLookAngle: {
+      x: 0,
+      y: 0,
+      z: 0,
+    },
+    ColorDiffuse: {
+      r: 1,
+      g: 1,
+      b: 1,
+    },
+    LayoutGroupSortIndex: 0,
+    Value: 0,
+    Locked: false,
+    Grid: true,
+    Snap: true,
+    IgnoreFoW: false,
+    MeasureMovement: false,
+    DragSelectable: true,
+    Autoraise: true,
+    Sticky: true,
+    Tooltip: true,
+    GridProjection: false,
+    HideWhenFaceDown: false,
+    Hands: false,
+    CustomMesh: {
+      MeshURL: "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
+      DiffuseURL: "",
+      NormalURL: "",
+      ColliderURL: "",
+      Convex: true,
+      MaterialIndex: 3,
+      TypeIndex: 5,
+      CustomShader: {
+        SpecularColor: {
+          r: 0,
+          g: 0,
+          b: 0,
+        },
+        SpecularIntensity: 0,
+        SpecularSharpness: 2,
+        FresnelStrength: 0,
+      },
+      CastShadows: true,
+    },
+    LuaScript: "",
+    LuaScriptState: "",
+    XmlUI: "",
+  };
+}
