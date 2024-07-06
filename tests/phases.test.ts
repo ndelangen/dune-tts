@@ -4,7 +4,7 @@
 import { expect, test, describe, mock as fn } from "bun:test";
 
 import { initApi } from "../src/utils/phases";
-import { Phase } from "../src/utils/phases-types";
+import { Phase, State } from "../src/utils/phases-types";
 
 const first: Phase = {
   name: "first",
@@ -25,7 +25,8 @@ const initialState = Object.freeze({
   phase: 0,
   turn: 0,
   phases: [],
-});
+  data: undefined,
+}) satisfies State;
 
 describe("setPhases", () => {
   test("no index", async () => {
@@ -306,5 +307,17 @@ describe("rate limiting", () => {
     // now we await it to be sure the state was updated
     await f1;
     expect(api.getState().phase).toBe(0);
+  });
+});
+
+describe("subscribing", () => {
+  test("subscribe", async () => {
+    const api = initApi({ ...initialState }, { first, last });
+    const fakeSubscriber = fn();
+    api.subscribe(fakeSubscriber);
+
+    await api.setState({});
+
+    expect(fakeSubscriber).toHaveBeenLastCalledWith({ ...initialState });
   });
 });

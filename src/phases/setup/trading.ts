@@ -1,4 +1,4 @@
-import { type Phase } from "../utils/phases-types";
+import { type Phase } from "../../utils/phases-types";
 
 const name = "draft trading";
 

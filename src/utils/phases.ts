@@ -3,6 +3,7 @@ import { Api, Phase, State } from "./phases-types";
 export function initApi(initialState: State, phaseList: Record<string, Phase>) {
   const state: State = initialState;
   let busy = false;
+  const subscribers: Function[] = [];
 
   const api: Api = {
     forward: async () => {
@@ -73,6 +74,15 @@ export function initApi(initialState: State, phaseList: Record<string, Phase>) {
     },
 
     getState: () => state,
+
+    setState: (newState) => {
+      Object.assign(state, newState);
+      subscribers.forEach((fn) => fn(state));
+    },
+
+    subscribe: (fn) => {
+      subscribers.push(fn);
+    },
   };
 
   return api;

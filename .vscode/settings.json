@@ -1,4 +1,5 @@
 {
   "ttsEditor.includePath": "./lua",
-  "ttsEditor.tstl.enable": false
+  "ttsEditor.tstl.enable": false,
+  "typescript.preferences.importModuleSpecifier": "relative"
 }

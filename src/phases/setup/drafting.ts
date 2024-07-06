@@ -1,10 +1,10 @@
 import { getArchPositions, getRingPositions, getSlottedRingPositions } from "utils/circle";
-import { type Phase } from "../utils/phases-types";
+import { State, type Phase } from "../../utils/phases-types";
 import { waitTime } from "@typed-tabletop-simulator/lib";
 
 const name = "drafting";
 
-async function setup() {
+async function setup(s: State) {
   log("setup drafting phase");
 
   // await Promise.all(
@@ -28,6 +28,7 @@ async function setup() {
       return true;
     })
   );
+
   // spawn faction tokens in arch/circle around center-point
   // move player-hand boxes to drafting positions
   // flipped up = drafted
@@ -38,10 +39,11 @@ async function setup() {
 
 export const phase: Phase = {
   name,
-  enterForwards: async () => {
-    await setup();
+  enterForwards: async (s) => {
+    await setup(s);
   },
   exitForwards: async () => {
+    const players = Player.getPlayers().filter((p) => p.color !== "Black");
     // unseat all players
     // delete all objects
     // move player-hand boxes back to playing positions
@@ -53,9 +55,9 @@ export const phase: Phase = {
     // spawn all drafted factions
     return true;
   },
-  enterBackwards: async () => {
+  enterBackwards: async (s) => {
     // delete all objects
-    await setup();
+    await setup(s);
   },
   exitBackwards: async () => {
     return false;

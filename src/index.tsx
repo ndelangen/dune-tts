@@ -3,13 +3,13 @@ import { Forge } from "@typed-tabletop-simulator/lib";
 import * as card from "./objects/card";
 import { fetch } from "./utils/fetch";
 import { initApi } from "./utils/phases";
-import * as drafting from "phases/drafting";
-import * as draftingTrading from "phases/draft-trading";
-import { Phase, State } from "utils/phases-types";
+import * as drafting from "./phases/setup/drafting";
+import * as draftingTrading from "./phases/setup/trading";
+import { Phase, State } from "./utils/phases-types";
 
 // import { App } from "App";
 
-let state: State = { turn: 0, phase: 0, phases: [] };
+let state: State = { turn: 0, phase: 0, phases: [], data: undefined };
 
 onSave = () => {
   return JSON.encode(state);
@@ -31,8 +31,14 @@ onLoad = (script_state) => {
 
   const d = async () => {
     const api = initApi(state, PHASES);
-    const data: any = await fetch(BASEURL + "generated/index.json");
+    api.subscribe((s) => {
+      state = s;
+    });
 
+    if (state.data === undefined) {
+      const data: any = await fetch(BASEURL + "generated/index.json");
+      await api.setState({ ...state, data });
+    }
     if (state.phases.length === 0) {
       state.phases = ["drafting", "draft-trading"];
     }
