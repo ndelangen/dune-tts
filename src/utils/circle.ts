@@ -13,8 +13,8 @@ export function getRingPositions(center: Vector, radius: number, count: number, 
 }
 
 export function getSlottedRingPositions(center: Vector, radius: number, count: number, startDegree = 0) {
-  const totalSlots = 18;
   const positions: Vector[] = [];
+  const totalSlots = 18;
 
   if (count > totalSlots) {
     throw new Error("Count exceeds the maximum allowed slots of 18.");
@@ -23,11 +23,11 @@ export function getSlottedRingPositions(center: Vector, radius: number, count: n
   const angleIncrement = (2 * Math.PI) / totalSlots;
   const startAngle = ((startDegree - 90) * -1 * Math.PI) / 180;
 
-  for (let i = count - 0; i >= -1; i--) {
+  for (let i = 0; i <= count - 1; i++) {
     const slotIndex = Math.floor(i * (totalSlots / count));
     const angle = startAngle + slotIndex * angleIncrement;
-    const x = center.x + radius * Math.cos(angle);
-    const z = center.z + radius * Math.sin(angle);
+    const x = center.x - radius * Math.cos(angle);
+    const z = center.z - radius * Math.sin(angle);
     positions.push(Vector(round(x), round(center.y), round(z)));
   }
 

@@ -3,7 +3,7 @@
 
 import { expect, test, describe, mock as fn } from "bun:test";
 
-import { getRingPositions, getArchPositions } from "../src/utils/circle";
+import { getRingPositions, getArchPositions, getSlottedRingPositions } from "../src/utils/circle";
 
 const v = ({ x, y, z }): Vector => ({ x, y, z } as Vector);
 
@@ -146,6 +146,40 @@ describe("getArchPositions", () => {
       v({ x: 0, y: 0, z: -1 }),
       v({ x: -0.0872, y: 0, z: -0.9962 }),
       v({ x: -0.1736, y: 0, z: -0.9848 }),
+    ]);
+  });
+});
+
+describe("getSlottedRingPositions", () => {
+  test("1", () => {
+    const positions = getSlottedRingPositions(v({ x: 0, y: 0, z: 0 }), 1, 1);
+    expect(positions).toEqual([v({ x: 0, y: 0, z: -1 })]);
+  });
+
+  test("6", () => {
+    const positions = getSlottedRingPositions(v({ x: 0, y: 0, z: 0 }), 1, 6);
+    expect(positions).toEqual([
+      v({ x: 0, y: 0, z: -1 }),
+      v({ x: 0.866, y: 0, z: -0.5 }),
+      v({ x: 0.866, y: 0, z: 0.5 }),
+      v({ x: 0, y: 0, z: 1 }),
+      v({ x: -0.866, y: 0, z: 0.5 }),
+      v({ x: -0.866, y: 0, z: -0.5 }),
+    ]);
+  });
+
+  test("9", () => {
+    const positions = getSlottedRingPositions(v({ x: 0, y: 0, z: 0 }), 1, 9);
+    expect(positions).toEqual([
+      v({ x: 0, y: 0, z: -1 }),
+      v({ x: 0.6428, y: 0, z: -0.766 }),
+      v({ x: 0.9848, y: 0, z: -0.1736 }),
+      v({ x: 0.866, y: 0, z: 0.5 }),
+      v({ x: 0.342, y: 0, z: 0.9397 }),
+      v({ x: -0.342, y: 0, z: 0.9397 }),
+      v({ x: -0.866, y: 0, z: 0.5 }),
+      v({ x: -0.9848, y: 0, z: -0.1736 }),
+      v({ x: -0.6428, y: 0, z: -0.766 }),
     ]);
   });
 });

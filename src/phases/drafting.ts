@@ -7,22 +7,22 @@ const name = "drafting";
 async function setup() {
   log("setup drafting phase");
 
+  // await Promise.all(
+  //   getArchPositions(Vector(0, 0, 0), 4, 10, 10, 0, true).map(async (pos, index = 0) => {
+  //     await waitTime(1 + index * 0.1);
+  //     Player.White?.pingTable(Vector(pos));
+  //     return true;
+  //   })
+  // );
+  // await Promise.all(
+  //   getRingPositions(Vector(0, 0, 0), 5, 10, 0).map(async (pos, index = 0) => {
+  //     await waitTime(1 + index * 0.1);
+  //     Player.White?.pingTable(Vector(pos));
+  //     return true;
+  //   })
+  // );
   await Promise.all(
-    getArchPositions(Vector(0, 0, 0), 4, 10, 10, 0, true).map(async (pos, index = 0) => {
-      await waitTime(1 + index * 0.1);
-      Player.White?.pingTable(Vector(pos));
-      return true;
-    })
-  );
-  await Promise.all(
-    getRingPositions(Vector(0, 0, 0), 5, 10, 0).map(async (pos, index = 0) => {
-      await waitTime(1 + index * 0.1);
-      Player.White?.pingTable(Vector(pos));
-      return true;
-    })
-  );
-  await Promise.all(
-    getSlottedRingPositions(Vector(0, 0, 0), 6, 17, 0).map(async (pos, index = 0) => {
+    getSlottedRingPositions(Vector(0, 0, 0), 6, 4, 0).map(async (pos, index = 0) => {
       await waitTime(1 + index * 0.1);
       Player.White?.pingTable(Vector(pos));
       return true;
