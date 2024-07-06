@@ -1,4 +1,4 @@
-import { getRingPositions } from "utils/circle";
+import { getArchPositions, getRingPositions } from "utils/circle";
 import { type Phase } from "../utils/phases-types";
 import { waitTime } from "@typed-tabletop-simulator/lib";
 
@@ -8,8 +8,15 @@ async function setup() {
   log("setup drafting phase");
 
   await Promise.all(
-    getRingPositions(Vector(0, 0, 0), 4, 18, 0).map(async (pos, index = 0) => {
-      await waitTime(1 + index * 0.5);
+    getArchPositions(Vector(0, 0, 0), 4, 10, 10, 0, true).map(async (pos, index = 0) => {
+      await waitTime(1 + index * 0.1);
+      Player.White?.pingTable(Vector(pos));
+      return true;
+    })
+  );
+  await Promise.all(
+    getRingPositions(Vector(0, 0, 0), 5, 10, 0).map(async (pos, index = 0) => {
+      await waitTime(1 + index * 0.1);
       Player.White?.pingTable(Vector(pos));
       return true;
     })

@@ -26,9 +26,9 @@ describe("getRingPositions", () => {
       const positions = getRingPositions(v({ x: 0, y: 0, z: 0 }), 1, 4);
       expect(positions).toEqual([
         v({ x: 1, y: 0, z: 0 }),
-        v({ x: 0, y: 0, z: 1 }),
-        v({ x: -1, y: 0, z: 0 }),
         v({ x: 0, y: 0, z: -1 }),
+        v({ x: -1, y: 0, z: 0 }),
+        v({ x: 0, y: 0, z: 1 }),
       ]);
     });
 
@@ -36,10 +36,10 @@ describe("getRingPositions", () => {
       const positions = getRingPositions(v({ x: 0, y: 0, z: 0 }), 1, 5);
       expect(positions).toEqual([
         v({ x: 1, y: 0, z: 0 }),
-        v({ x: 0.309, y: 0, z: 0.9511 }),
-        v({ x: -0.809, y: 0, z: 0.5878 }),
-        v({ x: -0.809, y: 0, z: -0.5878 }),
         v({ x: 0.309, y: 0, z: -0.9511 }),
+        v({ x: -0.809, y: 0, z: -0.5878 }),
+        v({ x: -0.809, y: 0, z: 0.5878 }),
+        v({ x: 0.309, y: 0, z: 0.9511 }),
       ]);
     });
   });
@@ -49,8 +49,8 @@ describe("getRingPositions", () => {
       const positions = getRingPositions(v({ x: 0, y: 1, z: 0 }), 1, 3);
       expect(positions).toEqual([
         v({ x: 1, y: 1, z: 0 }),
-        v({ x: -0.5, y: 1, z: 0.866 }),
         v({ x: -0.5, y: 1, z: -0.866 }),
+        v({ x: -0.5, y: 1, z: 0.866 }),
       ]);
     });
 
@@ -58,8 +58,8 @@ describe("getRingPositions", () => {
       const positions = getRingPositions(v({ x: 10, y: 0, z: 10 }), 1, 3);
       expect(positions).toEqual([
         v({ x: 11, y: 0, z: 10 }),
-        v({ x: 9.5, y: 0, z: 10.866 }),
         v({ x: 9.5, y: 0, z: 9.134 }),
+        v({ x: 9.5, y: 0, z: 10.866 }),
       ]);
     });
 
@@ -67,8 +67,8 @@ describe("getRingPositions", () => {
       const positions = getRingPositions(v({ x: -10, y: -10, z: -10 }), 1, 3);
       expect(positions).toEqual([
         v({ x: -9, y: -10, z: -10 }),
-        v({ x: -10.5, y: -10, z: -9.134 }),
         v({ x: -10.5, y: -10, z: -10.866 }),
+        v({ x: -10.5, y: -10, z: -9.134 }),
       ]);
     });
   });
