@@ -6,6 +6,7 @@ import { initApi } from "./utils/phases";
 import * as drafting from "./phases/setup/drafting";
 import * as draftingTrading from "./phases/setup/trading";
 import { Phase, State } from "./utils/phases-types";
+import { BASEURL } from "utils/BASEURL";
 
 // import { App } from "App";
 
@@ -20,8 +21,6 @@ const PHASES = [drafting.phase, draftingTrading.phase].reduce<Record<string, Pha
   return acc;
 }, {});
 
-const BASEURL = "https://cdn.jsdelivr.net/gh/ndelangen/dune-assets@main/";
-
 onLoad = (script_state) => {
   // const ui = render(Global, <App />);
 
@@ -35,12 +34,28 @@ onLoad = (script_state) => {
       state = s;
     });
 
-    if (state.data === undefined) {
-      const data: any = await fetch(BASEURL + "generated/index.json");
-      await api.setState({ ...state, data });
+    if (state.data === null) {
+      // try {
+      const data: any = await fetch(BASEURL + "generated/index.json").catch((e) => {});
+      if (data) {
+        api.setState({ ...state, data });
+      }
+      log("DONE");
+      // } catch (e) {
+      //   broadcastToAll("Sorry, the mod is broken, fetch failed");
+      // }
     }
+    log("YES");
+
+    if (state.data === null) {
+      log("NO");
+      return;
+    }
+
     if (state.phases.length === 0) {
-      state.phases = ["drafting", "draft-trading"];
+      api.setState({
+        phases: ["drafting", "draft-trading"],
+      });
     }
 
     if (state.turn === 0 && state.phase === 0) {

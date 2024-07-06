@@ -15,9 +15,41 @@ export interface Api {
   subscribe: (fn: (s: State) => void) => void;
 }
 
+interface Troop {
+  front: string;
+  back: string;
+  count: number;
+}
+
+type Collection = "bribe" | "income";
+
+interface DeckPlacement {
+  name: string;
+  cards: any[];
+  placeholder: string;
+}
+
+interface Faction {
+  logo: string;
+  sheet: string;
+  shield: string;
+  spiceCount: number;
+  leaders: string[];
+  alliance: string;
+  traitors: string[];
+  collections: Collection[];
+  decks: {
+    left: DeckPlacement[];
+    right: DeckPlacement[];
+  };
+  extras: any[];
+  troops: Troop[];
+}
+
 interface Data {
   treachery: Record<string, string>;
   backs: Record<string, string>;
+  factions: Record<string, Faction>;
 }
 
 export interface State {

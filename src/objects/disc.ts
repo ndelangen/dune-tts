@@ -1,3 +1,5 @@
+import { BASEURL } from "../utils/BASEURL";
+
 interface DiscInput {
   front: string;
   back: string;
@@ -28,7 +30,7 @@ function defineDisc(input: DiscInput) {
       scaleY: 2,
       scaleZ: 1,
     },
-    Nickname: "one double-sided-troop",
+    Nickname: input.name || "",
     Description: "",
     GMNotes: "",
     AltLookAngle: {
@@ -57,8 +59,7 @@ function defineDisc(input: DiscInput) {
     Hands: false,
     CustomMesh: {
       MeshURL: "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
-      DiffuseURL:
-        "http://cloud-3.steamusercontent.com/ugc/2495638210047392487/14CD02AFE700211EE5F042C6C3D30CB9EB88153B/",
+      DiffuseURL: BASEURL + input.front,
       NormalURL: "",
       ColliderURL: "",
       Convex: true,
@@ -76,7 +77,7 @@ function defineDisc(input: DiscInput) {
       },
       CastShadows: true,
     },
-    LuaScript: "function onLoad()\n  log(self.getJSON())\nend",
+    LuaScript: "",
     LuaScriptState: "",
     XmlUI: "",
     ChildObjects: [
@@ -124,8 +125,7 @@ function defineDisc(input: DiscInput) {
         CustomMesh: {
           MeshURL:
             "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
-          DiffuseURL:
-            "http://cloud-3.steamusercontent.com/ugc/2495638210047391534/39A372D51A59B9CB414C4702E5D3F32965AD49D7/",
+          DiffuseURL: BASEURL + input.back,
           NormalURL: "",
           ColliderURL: "",
           Convex: true,
@@ -156,17 +156,17 @@ function defineStack(input: DiscInput) {
     GUID: "af9d1b",
     Name: "Custom_Model_Stack",
     Transform: {
-      posX: -18.9999752,
-      posY: 2.1499052,
-      posZ: 22.9999542,
-      rotX: -0.000500617956,
-      rotY: 180.000031,
-      rotZ: -0.00133555452,
+      posX: 0.0,
+      posY: 0.0,
+      posZ: 0.0,
+      rotX: 0.0,
+      rotY: 180.0,
+      rotZ: 0.0,
       scaleX: 1,
       scaleY: 2,
       scaleZ: 1,
     },
-    Nickname: "double-sided-troop",
+    Nickname: input.name || "",
     Description: "",
     GMNotes: "",
     AltLookAngle: {
@@ -198,8 +198,7 @@ function defineStack(input: DiscInput) {
     Number: 5,
     CustomMesh: {
       MeshURL: "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
-      DiffuseURL:
-        "http://cloud-3.steamusercontent.com/ugc/2495638210047392487/14CD02AFE700211EE5F042C6C3D30CB9EB88153B/",
+      DiffuseURL: BASEURL + input.front,
       NormalURL: "",
       ColliderURL: "",
       Convex: true,
@@ -217,7 +216,7 @@ function defineStack(input: DiscInput) {
       },
       CastShadows: true,
     },
-    LuaScript: "function onLoad()\n  log(self.getJSON())\nend",
+    LuaScript: "",
     LuaScriptState: "",
     XmlUI: "",
     ChildObjects: [
@@ -265,8 +264,7 @@ function defineStack(input: DiscInput) {
         CustomMesh: {
           MeshURL:
             "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
-          DiffuseURL:
-            "http://cloud-3.steamusercontent.com/ugc/2495638210047391534/39A372D51A59B9CB414C4702E5D3F32965AD49D7/",
+          DiffuseURL: BASEURL + input.back,
           NormalURL: "",
           ColliderURL: "",
           Convex: true,

@@ -1,11 +1,33 @@
-import { getArchPositions, getRingPositions, getSlottedRingPositions } from "utils/circle";
+import { Forge, waitFrames, waitTime } from "@typed-tabletop-simulator/lib";
+import { getArchPositions, getRingPositions, getSlottedRingPositions } from "../../utils/circle";
 import { State, type Phase } from "../../utils/phases-types";
-import { waitTime } from "@typed-tabletop-simulator/lib";
+import * as disc from "../../objects/disc";
 
 const name = "drafting";
 
 async function setup(s: State) {
   log("setup drafting phase");
+
+  if (s.data) {
+    const center = Vector(0, 2, 0);
+    const factions = Object.values(s.data.factions);
+    const names = Object.keys(s.data.factions);
+    const count = factions.length;
+    const positions = getRingPositions(center, 5, count);
+
+    for (let i = 0; i <= count - 1; i++) {
+      await waitFrames(10);
+      await Forge.spawnObject(
+        disc.define({
+          //
+          front: factions[i].logo,
+          back: factions[i].logo,
+          name: names[i],
+        }),
+        { position: positions[i], rotation: Vector(0, 180, 0), scale: Vector(1, 1, 1) }
+      );
+    }
+  }
 
   // await Promise.all(
   //   getArchPositions(Vector(0, 0, 0), 4, 10, 10, 0, true).map(async (pos, index = 0) => {
