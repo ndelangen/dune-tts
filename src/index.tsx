@@ -1,6 +1,6 @@
-// import { render, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
-import { Forge } from "@typed-tabletop-simulator/lib";
-import * as card from "./objects/card";
+import { applyUi, render, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
+// import { Forge } from "@typed-tabletop-simulator/lib";
+// import * as card from "./objects/card";
 import { fetch } from "./utils/fetch";
 import { initApi } from "./utils/phases";
 import * as drafting from "./phases/setup/drafting";
@@ -8,9 +8,9 @@ import * as draftingTrading from "./phases/setup/trading";
 import { Phase, State } from "./utils/phases-types";
 import { BASEURL } from "utils/BASEURL";
 
-// import { App } from "App";
+import { App } from "App";
 
-let state: State = { turn: 0, phase: 0, phases: [], data: undefined };
+let state: State = { turn: 0, phase: 0, phases: [], data: null };
 
 onSave = () => {
   return JSON.encode(state);
@@ -21,8 +21,26 @@ const PHASES = [drafting.phase, draftingTrading.phase].reduce<Record<string, Pha
   return acc;
 }, {});
 
+onPlayerConnect = (player) => {
+  if (state.phase === 0 && state.turn === 0) {
+    const all = Player.getColors();
+    const taken = Player.getPlayers().map((p) => p.color);
+    const available = all.find((c) => !taken.includes(c));
+
+    if (!available) {
+      broadcastToAll("No more players can join");
+      return;
+    }
+
+    player.changeColor(available);
+  }
+};
+
 onLoad = (script_state) => {
   // const ui = render(Global, <App />);
+
+  // THIS WORKS!
+  // applyUi(Global, <App />);
 
   if (script_state !== "" && script_state !== undefined && script_state !== null) {
     state = JSON.decode(script_state) as State;
@@ -35,20 +53,14 @@ onLoad = (script_state) => {
     });
 
     if (state.data === null) {
-      // try {
       const data: any = await fetch(BASEURL + "generated/index.json").catch((e) => {});
       if (data) {
         api.setState({ ...state, data });
       }
-      log("DONE");
-      // } catch (e) {
-      //   broadcastToAll("Sorry, the mod is broken, fetch failed");
-      // }
     }
-    log("YES");
 
     if (state.data === null) {
-      log("NO");
+      broadcastToAll("Sorry, the mod is broken, fetch failed");
       return;
     }
 

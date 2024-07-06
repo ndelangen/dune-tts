@@ -56,5 +56,5 @@ export interface State {
   phase: number;
   turn: number;
   phases: string[];
-  data: Data | undefined;
+  data: Data | null;
 }
