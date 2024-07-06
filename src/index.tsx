@@ -1,6 +1,6 @@
 import { applyUi, render, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
 // import { Forge } from "@typed-tabletop-simulator/lib";
-// import * as card from "./objects/card";
+import * as card from "./objects/card";
 import { fetch } from "./utils/fetch";
 import { initApi } from "./utils/phases";
 import * as drafting from "./phases/setup/drafting";
@@ -9,6 +9,7 @@ import { Phase, State } from "./utils/phases-types";
 import { BASEURL } from "utils/BASEURL";
 
 import { App } from "./App";
+import { Forge } from "@typed-tabletop-simulator/lib";
 
 let state: State = { turn: 0, phase: 0, phases: [], data: null };
 
@@ -70,21 +71,23 @@ onLoad = (script_state) => {
       });
     }
 
+    // if (state.data !== null) {
+    //   const d = state.data;
+    //   const cards = Object.values(state.data.treachery).map((front) => ({
+    //     front: BASEURL + front,
+    //     back: BASEURL + d.backs.treachery,
+    //   }));
+
+    //   await Forge.spawnObject(card.define(cards), {
+    //     position: { x: 0, y: 5, z: 0 },
+    //     rotation: { x: 0, y: 180, z: 0 },
+    //     scale: { x: 1, y: 1, z: 1 },
+    //   });
+    // }
+
     if (state.turn === 0 && state.phase === 0) {
       await api.setPhases(state.phases);
     }
-
-    // const cards = Object.values(data.treachery).map((front) => ({
-    //   front: BASEURL + front,
-    //   back: BASEURL + data.backs.treachery,
-    // }));
-
-    // await Forge.spawnObject(card.define(cards), {
-    //   position: { x: 0, y: 5, z: 0 },
-    //   rotation: { x: 0, y: 180, z: 0 },
-    //   scale: { x: 1, y: 1, z: 1 },
-    // });
-
     // await Forge.spawnObject(
     //   card.define({
     //     front: "http://cloud-3.steamusercontent.com/ugc/2551934014981172056/B7D2C194B49085F191009A9E2AC10D404D674691/",

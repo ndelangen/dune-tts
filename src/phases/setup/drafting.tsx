@@ -7,7 +7,7 @@ import { App } from "../../App";
 
 const name = "drafting";
 
-async function setup(s: State) {
+async function setup(s: State, api: Api) {
   if (s.data === null) {
     return;
   }
@@ -16,7 +16,7 @@ async function setup(s: State) {
   const factions = Object.values(s.data.factions);
   const names = Object.keys(s.data.factions);
   const count = factions.length;
-  const positions = getRingPositions(center, 5, count);
+  const positions = getRingPositions(center, 6, count);
 
   const info = await Forge.spawnObject(disc.simple({ name: "center" }), {
     position: center,
@@ -25,8 +25,6 @@ async function setup(s: State) {
   });
   info.setColorTint({ r: 0.5, g: 0.5, b: 0.5, a: 0.0 });
   info.interactable = false;
-
-  applyUi(info, <App list={["AAA", "BBB", "CCC"]} />);
 
   const tokens: TTSObject[] = [];
 
@@ -63,15 +61,17 @@ async function setup(s: State) {
     );
   }
 
+  applyUi(info, <App list={["Flip faction to draft"]} />);
+
   broadcastToAll("Drafting phase has started");
   await waitTime(1);
   broadcastToAll("Flip a faction token to draft it");
   await waitTime(1);
 
-  const players = Player.getPlayers().filter((p) => p.seated && p.color !== "Black");
-
+  // in sync view of who drafted
   const timer = Wait.time(
     () => {
+      const players = Player.getPlayers().filter((p) => p.seated && p.color !== "Black");
       const playersThatDrafted = players.filter((p) => {
         return tokens.some((t) => {
           return t.getDescription().includes(p.steam_name);
@@ -79,8 +79,7 @@ async function setup(s: State) {
       });
       const remaining = players.filter((p) => !playersThatDrafted.includes(p));
 
-      const messages = [
-        //
+      let messages = [
         ...playersThatDrafted.map(
           (p) =>
             p.steam_name +
@@ -88,28 +87,38 @@ async function setup(s: State) {
             tokens
               .filter((t) => t.getDescription().includes(p.steam_name))
               .map((t) => t.getName())
-              .join(",")
+              .join(", ")
         ),
         ...remaining.map((p) => p.steam_name + ": nothing yet"),
       ];
 
-      // const c = tokens.filter((t) => t.getDescription() !== "");
-      // const r = c.map((t) => t.getDescription().replace("drafted by ", "") + " drafted: " + t.getName());
-      if (messages.length > 0) {
-        applyUi(info, <App list={messages} />);
+      if (playersThatDrafted.length === players.length) {
+        messages = ["All players have drafted"];
       }
+
+      if (messages.length === 0) {
+        messages = ["No players have drafted"];
+      }
+
+      applyUi(
+        info,
+        <App
+          list={messages}
+          onClick={() => {
+            Wait.stop(timer);
+            log("Let's start the game!");
+            api.forward();
+          }}
+          showButton
+          // showButton={playersThatDrafted.length > 3}
+        />
+      );
     },
     0.2,
-    99999
+    999999
   );
 
-  await waitTime(150);
-  Wait.stop(timer);
-
   await waitTime(1);
-
-  // tokens.forEach((token) => {
-  //   token.
 
   // await Promise.all(
   //   getArchPositions(Vector(0, 0, 0), 4, 10, 10, 0, true).map(async (pos, index = 0) => {
@@ -145,13 +154,15 @@ async function setup(s: State) {
 
 export const phase: Phase = {
   name,
-  enterForwards: async (s) => {
-    await setup(s);
+  enterForwards: async (s, api) => {
+    await setup(s, api);
   },
   exitForwards: async () => {
+    log("exiting drafting phase");
     const players = Player.getPlayers().filter((p) => p.color !== "Black");
     players.forEach((p) => {
-      p.changeColor("Gray");
+      p.changeColor("Black");
+      p.changeColor("Grey");
     });
 
     await waitTime(1);
@@ -166,9 +177,9 @@ export const phase: Phase = {
     // spawn all drafted factions
     return true;
   },
-  enterBackwards: async (s) => {
+  enterBackwards: async (s, api) => {
     // delete all objects
-    await setup(s);
+    await setup(s, api);
   },
   exitBackwards: async () => {
     return false;
