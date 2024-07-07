@@ -29,12 +29,17 @@ interface DeckPlacement {
   placeholder: string;
 }
 
-interface Faction {
+export const colors = ["Blue", "Red", "Green", "Yellow", "Purple", "Orange", "White", "Brown", "Pink", "Teal"] as const;
+
+export type Color = (typeof colors)[number];
+
+export interface Faction {
   logo: string;
   sheet: string;
   shield: string;
   spiceCount: number;
   leaders: string[];
+  colors: Color[];
   alliance: string;
   traitors: string[];
   collections: Collection[];

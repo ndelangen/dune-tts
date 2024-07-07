@@ -8,7 +8,6 @@ export function initApi(initialState: State, phaseList: Record<string, Phase>) {
   const api: Api = {
     forward: async () => {
       if (busy) {
-        log("busy");
         return;
       }
 

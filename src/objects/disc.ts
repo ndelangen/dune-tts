@@ -31,6 +31,7 @@ function defineDisc(input: DiscInput) {
       scaleZ: 1,
     },
     Nickname: input.name || "",
+    Tags: ["coded"],
     Description: "",
     GMNotes: "",
     AltLookAngle: {
@@ -167,6 +168,7 @@ function defineStack(input: DiscInput) {
       scaleZ: 1,
     },
     Nickname: input.name || "",
+    Tags: ["coded"],
     Description: "",
     GMNotes: "",
     AltLookAngle: {
@@ -310,6 +312,7 @@ export function simple(input: SimpleInput) {
       scaleZ: 1,
     },
     Nickname: input.name || "",
+    Tags: ["coded"],
     Description: "",
     GMNotes: "",
     AltLookAngle: {

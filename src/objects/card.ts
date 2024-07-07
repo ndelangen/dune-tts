@@ -39,6 +39,7 @@ export function defineCard(input: CardInput) {
       scaleZ: 1,
     },
     Nickname: input.name || "",
+    Tags: ["coded"],
     Description: "",
     GMNotes: "",
     AltLookAngle: {
@@ -108,6 +109,7 @@ export function defineDeck(input: CardInput[]) {
       scaleZ: 1,
     },
     Nickname: "",
+    Tags: ["coded"],
     Description: "",
     GMNotes: "",
     AltLookAngle: {

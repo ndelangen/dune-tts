@@ -25,7 +25,7 @@ const initialState = Object.freeze({
   phase: 0,
   turn: 0,
   phases: [],
-  data: undefined,
+  data: null,
 }) satisfies State;
 
 describe("setPhases", () => {

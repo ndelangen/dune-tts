@@ -53,6 +53,9 @@ onLoad = (script_state) => {
       state = s;
     });
 
+    // debug
+    state.data = null;
+
     if (state.data === null) {
       const data: any = await fetch(BASEURL + "generated/index.json").catch((e) => {});
       if (data) {

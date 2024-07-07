@@ -1,16 +1,27 @@
 import { applyUi, render, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
 import { Forge, waitFrames, waitTime } from "@typed-tabletop-simulator/lib";
 import { getArchPositions, getRingPositions, getSlottedRingPositions } from "../../utils/circle";
-import { Api, State, type Phase } from "../../utils/phases-types";
+import { Api, colors, State, type Phase } from "../../utils/phases-types";
 import * as disc from "../../objects/disc";
 import { App } from "../../App";
+import { matchColorsToFactions } from "../../utils/color";
 
 const name = "drafting";
+
+const formatFactionName = (name: string) => {
+  const sections = name.split("-");
+  return sections.map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+};
 
 async function setup(s: State, api: Api) {
   if (s.data === null) {
     return;
   }
+
+  // DEBUG
+  Player.getPlayers()
+    .find((p) => p.steam_name === "Central419")
+    ?.changeColor("White");
 
   const center = Vector(0, 2, 0);
   const factions = Object.values(s.data.factions);
@@ -30,13 +41,14 @@ async function setup(s: State, api: Api) {
 
   // spawn faction tokens
   for (let i = 0; i <= count - 1; i++) {
-    await waitFrames(8);
+    await waitFrames(5);
     const data = {
       ...disc.define({
         front: factions[i].logo,
         back: factions[i].logo,
-        name: names[i],
+        name: formatFactionName(names[i]),
       }),
+      GMNotes: names[i],
       ColorDiffuse: { r: 0.7, g: 0.7, b: 0.7 },
       LuaScript: `
         function onRotate(spin, flip, player, old_spin, old_flip)
@@ -86,7 +98,7 @@ async function setup(s: State, api: Api) {
             ": " +
             tokens
               .filter((t) => t.getDescription().includes(p.steam_name))
-              .map((t) => t.getName())
+              .map((t) => formatFactionName(t.getName()))
               .join(", ")
         ),
         ...remaining.map((p) => p.steam_name + ": nothing yet"),
@@ -108,9 +120,10 @@ async function setup(s: State, api: Api) {
             Wait.stop(timer);
             log("Let's start the game!");
             api.forward();
+
+            info.destruct();
           }}
-          showButton
-          // showButton={playersThatDrafted.length > 3}
+          showButton={tokens.filter((t) => t.getDescription() !== "").length > 3}
         />
       );
     },
@@ -118,7 +131,7 @@ async function setup(s: State, api: Api) {
     999999
   );
 
-  await waitTime(1);
+  await waitTime(0.1);
 
   // await Promise.all(
   //   getArchPositions(Vector(0, 0, 0), 4, 10, 10, 0, true).map(async (pos, index = 0) => {
@@ -157,17 +170,189 @@ export const phase: Phase = {
   enterForwards: async (s, api) => {
     await setup(s, api);
   },
-  exitForwards: async () => {
+  exitForwards: async (s) => {
+    const data = s.data;
+    if (data === null) {
+      return false;
+    }
     log("exiting drafting phase");
-    const players = Player.getPlayers().filter((p) => p.color !== "Black");
-    players.forEach((p) => {
-      p.changeColor("Black");
+
+    const previouslySeatedPlayers = Player.getPlayers().filter(
+      (p) => p.color !== "Black" && p.color !== "Grey" && p.seated
+    );
+
+    const previouslyBlack = Player.getPlayers().filter((p) => p.color === "Black");
+
+    previouslyBlack.forEach((p) => {
       p.changeColor("Grey");
     });
 
-    await waitTime(1);
     // unseat all players
+    previouslySeatedPlayers.forEach((p) => {
+      p.changeColor("Black"); // required because TTS bug
+      p.changeColor("Grey");
+    });
+
+    previouslyBlack.forEach((p) => {
+      p.changeColor("Black");
+    });
+
+    await waitTime(0.2);
+
     // delete all objects
+    const allTokens = getObjectsWithAllTags(["coded"]);
+    const flippedTokens = allTokens.filter((o) => o.getDescription() !== "");
+    const unflippedTokens = allTokens.filter((o) => o.getDescription() === "");
+
+    const tokenPositions = getSlottedRingPositions(Vector(0, 2, 0), 10, flippedTokens.length, 0);
+    const handZonePositions = getSlottedRingPositions(Vector(0, 2, 0), 20, flippedTokens.length, 0);
+
+    for (let i = 0; i <= unflippedTokens.length - 1; i++) {
+      await waitFrames(4);
+      unflippedTokens[i].destruct();
+    }
+
+    // respawn tokens with LuaScript removed
+    for (let i = 0; i <= flippedTokens.length - 1; i++) {
+      const data = flippedTokens[i].getData();
+      const rotation = flippedTokens[i].getRotation();
+      const position = flippedTokens[i].getPosition();
+      const scale = flippedTokens[i].getScale();
+      data.LuaScript = "";
+      data.Locked = true;
+
+      flippedTokens[i].destruct();
+      flippedTokens[i] = await Forge.spawnObject(data, {
+        position,
+        rotation,
+        scale,
+      });
+      flippedTokens[i].setPositionSmooth(Vector(0, 2 + i * 0.5, 0));
+    }
+
+    // wait for the smooth movements to finish
+    await waitTime(0.6);
+
+    // randomize the positions of the flipped tokens
+    const count = flippedTokens.length;
+    for (let i = 0; i <= count * 2; i++) {
+      await waitFrames(5);
+
+      const a = i % 2;
+      let b = Math.floor(Math.random() * count);
+      while (b === a) {
+        b = Math.floor(Math.random() * count);
+      }
+      const temp = flippedTokens[a].getPosition();
+      flippedTokens[a].setPositionSmooth(flippedTokens[b].getPosition(), false, true);
+      flippedTokens[b].setPositionSmooth(temp, false, true);
+    }
+
+    // have order of tokens match order of positions
+    flippedTokens.sort((a, b) => b.getPosition().y - a.getPosition().y);
+
+    // wait for the smooth movements to finish
+    await waitTime(0.8);
+
+    function getAngleBetweenVectors(v1: Vector, v2: Vector): number {
+      const deltaX = v2.x - v1.x;
+      const deltaZ = v2.z - v1.z;
+      const angleRadians = Math.atan2(deltaZ, deltaX);
+      const angleDegrees = angleRadians * (180 / Math.PI);
+      return -90 - angleDegrees;
+    }
+
+    for (let i = 0; i <= count - 1; i++) {
+      await waitFrames(8);
+
+      const angle = getAngleBetweenVectors(tokenPositions[i], Vector(0, 0, 0));
+
+      flippedTokens[i].setPositionSmooth(tokenPositions[i], false, false);
+      flippedTokens[i].setRotationSmooth(Vector(0, angle, 180));
+    }
+
+    await waitTime(0.2);
+
+    // unlock all tokens
+    for (let i = 0; i <= count - 1; i++) {
+      flippedTokens[i].setLock(false);
+    }
+
+    await waitTime(0.2);
+
+    const handZones = getObjects().filter((o) => {
+      return o.name === "HandTrigger";
+    });
+
+    // log(handZones);
+
+    const combo = flippedTokens.map((t) => ({
+      token: t,
+      faction: data.factions[t.getGMNotes()],
+      name: t.getGMNotes(),
+      drafter: Player.getPlayers().find((p) => t.getDescription().includes(p.steam_name))?.steam_name,
+    }));
+
+    const uniqueDrafters = combo.map((c) => c.drafter).filter((p, index, self) => self.indexOf(p) === index);
+    const out = matchColorsToFactions(combo.map<[string, any]>((c) => [c.name, c.faction.colors]));
+
+    let players = uniqueDrafters;
+
+    if (count !== uniqueDrafters.length) {
+      broadcastToAll("There is a mismatch between the number of players and the number of factions drafted");
+
+      players = [...uniqueDrafters, ...previouslySeatedPlayers.map((p) => p.steam_name)].filter(
+        (p, index, self) => self.indexOf(p) === index
+      );
+    }
+
+    // randomize player order
+    players.sort(() => Math.random() - 0.5);
+
+    const playerz = players.map((p) => {
+      return Player.getPlayers().find((pl) => pl.steam_name === p);
+    });
+
+    if (count !== playerz.length) {
+      broadcastToAll("There is a mismatch between the number of players and the number of factions drafted");
+    }
+
+    // move all handzones to center
+    for (let i = 0; i <= handZones.length - 1; i++) {
+      handZones[i].setPosition(Vector(0, 0, 50));
+      handZones[i].setRotation(Vector(0, 0, 0));
+      handZones[i].setScale(Vector(1, 1, 1));
+    }
+
+    for (let i = 0; i <= count - 1; i++) {
+      const c = combo[i];
+      const color = out[c.name];
+      const player = playerz[i];
+      const handzone = handZones.find((h) => (h.getData() as any).FogColor === color);
+      if (handzone === undefined) {
+        broadcastToAll("HandZone not found for color " + color + " for faction " + c.name + " drafted by " + c.drafter);
+        return false;
+      }
+
+      const angle = getAngleBetweenVectors(tokenPositions[i], Vector(0, 0, 0));
+      handzone.setPosition(handZonePositions[i]);
+      handzone.setRotation(Vector(0, angle, 0));
+      handzone.setScale(Vector(11, 6, 6));
+
+      if (player) {
+        player.changeColor(color);
+      }
+    }
+
+    // Player.getPlayers().map((p) => {
+    //   log(p);
+    //   // p.getHandObjects().forEach((o, index) => {
+    //   //   log(p.color);
+    //   //   log(index);
+    //   //   log(o);
+    //   // });
+    // });
+
     // move player-hand boxes back to playing positions
     // spawn board
     // randomize player seating
