@@ -19,9 +19,9 @@ async function setup(s: State, api: Api) {
   }
 
   // DEBUG
-  Player.getPlayers()
-    .find((p) => p.steam_name === "Central419")
-    ?.changeColor("White");
+  // Player.getPlayers()
+  //   .find((p) => p.steam_name === "Central419")
+  //   ?.changeColor("White");
 
   const center = Vector(0, 2, 0);
   const factions = Object.values(s.data.factions);
