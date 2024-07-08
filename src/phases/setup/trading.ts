@@ -1,39 +1,46 @@
-import { waitCondition, waitFrames } from "@typed-tabletop-simulator/lib";
+import { waitCondition, waitFrames, waitTime } from "@typed-tabletop-simulator/lib";
 import { type Phase } from "../../utils/phases-types";
 
-const name = "draft trading";
+const name = "trading";
+
+function checkReadiness() {
+  const tokens = getObjectsWithAllTags(["coded"]);
+  return tokens.every((token) => {
+    return token.is_face_down;
+  });
+}
 
 export const phase: Phase = {
   name,
-  enterForwards: async () => {},
-  exitForwards: async () => {
+  enterForwards: async (s, api) => {
+    broadcastToAll("Trade factions by swapping seat with other players. When ready, flip your faction token.");
     const tokens = getObjectsWithAllTags(["coded"]);
 
-    tokens.forEach((token) => {
-      token.flip();
-    });
-
-    await waitFrames(10);
-
-    function checkReadiness() {
-      const tokens = getObjectsWithAllTags(["coded"]);
-      return tokens.every((token) => {
-        const y = token.getRotation().y;
-        return y > 178 && y < 182; // it's flipped!
+    if (checkReadiness()) {
+      tokens.forEach((token) => {
+        token.flip();
       });
     }
 
+    await waitTime(4);
+
     // check if all faction tokens have been flipped correctly
     // indicating everyone is ready to proceed
-    const ready = checkReadiness();
-
-    broadcastToAll("Trade factions by swapping seat with other players. When ready, flip your faction token.");
 
     await waitCondition(checkReadiness);
 
     broadcastToAll("All players are ready to proceed.");
 
-    return ready;
+    await waitTime(0.2);
+
+    waitTime(0.2).then(() => {
+      return api.forward();
+    });
+
+    return;
+  },
+  exitForwards: async () => {
+    return true;
   },
   enterBackwards: async () => {},
   exitBackwards: async () => {

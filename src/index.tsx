@@ -5,6 +5,7 @@ import { fetch } from "./utils/fetch";
 import { initApi } from "./utils/phases";
 import * as drafting from "./phases/setup/drafting";
 import * as draftingTrading from "./phases/setup/trading";
+import * as spawning from "./phases/setup/spawning";
 import { Phase, State } from "./utils/phases-types";
 import { BASEURL } from "utils/BASEURL";
 
@@ -17,7 +18,7 @@ onSave = () => {
   return JSON.encode(state);
 };
 
-const PHASES = [drafting.phase, draftingTrading.phase].reduce<Record<string, Phase>>((acc, phase) => {
+const PHASES = [drafting.phase, draftingTrading.phase, spawning.phase].reduce<Record<string, Phase>>((acc, phase) => {
   acc[phase.name] = phase;
   return acc;
 }, {});
@@ -70,7 +71,7 @@ onLoad = (script_state) => {
 
     if (state.phases.length === 0) {
       api.setState({
-        phases: ["drafting", "draft-trading"],
+        phases: [drafting.phase.name, draftingTrading.phase.name, spawning.phase.name],
       });
     }
 

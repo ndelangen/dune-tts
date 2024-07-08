@@ -129,7 +129,7 @@ async function setup(s: State, api: Api) {
 
               info.destruct();
             }}
-            showButton={tokens.filter((t) => t.getDescription() !== "").length > 3}
+            showButton={tokens.filter((t) => t.getDescription() !== "").length > 2}
           />
         );
       }
@@ -165,10 +165,13 @@ export const phase: Phase = {
     });
 
     // unseat all players
-    previouslySeatedPlayers.forEach((p) => {
+    for (let i = 0; i <= previouslySeatedPlayers.length - 1; i++) {
+      const p = previouslySeatedPlayers[i];
       p.changeColor("Black"); // required because TTS bug
+      await waitTime(0.1);
       p.changeColor("Grey");
-    });
+      p.changeColor("Grey");
+    }
 
     previouslyBlack.forEach((p) => {
       p.changeColor("Black");
@@ -226,11 +229,11 @@ export const phase: Phase = {
       flippedTokens[b].setPositionSmooth(temp, false, true);
     }
 
-    // have order of tokens match order of positions
-    flippedTokens.sort((a, b) => b.getPosition().y - a.getPosition().y);
-
     // wait for the smooth movements to finish
     await waitCondition(() => flippedTokens.every((t) => t.isSmoothMoving() === false));
+
+    // have order of tokens match order of positions
+    flippedTokens.sort((a, b) => b.getPosition().y - a.getPosition().y);
 
     function getAngleBetweenVectors(v1: Vector, v2: Vector): number {
       const deltaX = v2.x - v1.x;
@@ -279,14 +282,17 @@ export const phase: Phase = {
     }
 
     // randomize player order
-    playerNames.sort(() => Math.random() - 0.5);
+    for (let i = playerNames.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [playerNames[i], playerNames[j]] = [playerNames[j], playerNames[i]];
+    }
 
     const players = playerNames.map((p) => {
       return Player.getPlayers().find((pl) => pl.steam_name === p);
     });
 
     if (count !== players.length) {
-      broadcastToAll("There is a mismatch between the number of players and the number of factions drafted");
+      // broadcastToAll("There is a mismatch between the number of players and the number of factions drafted");
     }
 
     const handZones = getObjects().filter((o) => {
@@ -318,6 +324,9 @@ export const phase: Phase = {
 
       if (player) {
         player.changeColor(color);
+        await waitTime(0.1);
+        player.changeColor(color);
+        broadcastToAll(player.steam_name + " should sit in " + color + ", playing " + formatFactionName(c.name));
       }
     }
 
