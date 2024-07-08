@@ -26,7 +26,7 @@ onPlayerConnect = (player) => {
   if (state.phase === 0 && state.turn === 0) {
     const all = Player.getColors();
     const taken = Player.getPlayers().map((p) => p.color);
-    const available = all.find((c) => !taken.includes(c));
+    const available = all.find((c) => !taken.includes(c) && c !== "Black" && c !== "Grey");
 
     if (!available) {
       broadcastToAll("No more players can join");
@@ -44,7 +44,7 @@ onLoad = (script_state) => {
   // applyUi(Global, <App />);
 
   if (script_state !== "" && script_state !== undefined && script_state !== null) {
-    state = JSON.decode(script_state) as State;
+    // state = JSON.decode(script_state) as State;
   }
 
   const d = async () => {
