@@ -31,7 +31,16 @@ export const phase: Phase = {
 
     broadcastToAll("All players are ready to proceed.");
 
-    await waitTime(0.2);
+    await waitCondition(() => {
+      // all tokens are resting
+      return tokens.every((token) => {
+        return token.resting;
+      });
+    });
+
+    tokens.forEach((token) => {
+      token.setLock(true);
+    });
 
     waitTime(0.2).then(() => {
       return api.forward();

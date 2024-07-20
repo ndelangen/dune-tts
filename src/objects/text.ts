@@ -1,8 +1,15 @@
 interface TextInput {
   text: string;
+  font?: "COPRGTB" | "OTHER";
+  frontColor?: string;
+  backColor?: string;
 }
 
-export function define(input: TextInput) {
+export function defineText(input: TextInput) {
+  const font = input.font || "COPRGTB";
+  const frontColor = input.frontColor || "#F0EDAB";
+  const backColor = input.backColor || "#000000";
+
   return {
     GUID: "bee9ec",
     Name: "Custom_Model",
@@ -26,9 +33,10 @@ export function define(input: TextInput) {
       z: 0.0,
     },
     ColorDiffuse: {
-      r: 0.121568404,
-      g: 0.5333333,
-      b: 1.0,
+      r: 0.0,
+      g: 0.0,
+      b: 0.0,
+      a: 0.0,
     },
     Tags: ["coded", "location_name"],
     LayoutGroupSortIndex: 0,
@@ -70,23 +78,23 @@ export function define(input: TextInput) {
     LuaScriptState: "",
     XmlUI: `
       <Panel rotation="0 0 0" position="0 0 -12" id="root">
-        <Text color="#F0EDAB" position="-6 0 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="6 0 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="0 -6 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="0 6 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="-6 6 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="6 6 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="6 -6 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="-6 -6 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="-3 0 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="3 0 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="0 -3 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="0 3 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="-3 3 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="3 3 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="3 -3 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#F0EDAB" position="-3 -3 0" fontSize="100" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
-        <Text color="#000000" scale="0.2 0.2 0.2" fontSize="1700" font="fonts/COPRGTB" outlineSize="2" outline="#F0EDAB">${input.text}</Text>
+        <Text color="${frontColor}" position="-6 0 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="6 0 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="0 -6 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="0 6 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="-6 6 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="6 6 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="6 -6 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="-6 -6 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="-3 0 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="3 0 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="0 -3 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="0 3 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="-3 3 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="3 3 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="3 -3 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${frontColor}" position="-3 -3 0" fontSize="100" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
+        <Text color="${backColor}" scale="0.2 0.2 0.2" fontSize="1700" font="fonts/${font}" outlineSize="2" outline="${frontColor}">${input.text}</Text>
       </Panel>
     `,
     CustomUIAssets: [
