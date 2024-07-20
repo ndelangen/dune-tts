@@ -16,23 +16,22 @@ export const phase: Phase = {
     broadcastToAll("Trade factions by swapping seat with other players. When ready, flip your faction token.");
     const tokens = getObjectsWithAllTags(["coded"]);
 
+    tokens.forEach((token) => {
+      token.setLock(false);
+    });
+
     if (checkReadiness()) {
       tokens.forEach((token) => {
         token.flip();
       });
     }
 
-    await waitTime(4);
-
-    // check if all faction tokens have been flipped correctly
-    // indicating everyone is ready to proceed
-
+    await waitTime(1);
     await waitCondition(checkReadiness);
 
     broadcastToAll("All players are ready to proceed.");
 
     await waitCondition(() => {
-      // all tokens are resting
       return tokens.every((token) => {
         return token.resting;
       });
@@ -40,6 +39,7 @@ export const phase: Phase = {
 
     tokens.forEach((token) => {
       token.setLock(true);
+      token.setDescription("");
     });
 
     waitTime(0.2).then(() => {

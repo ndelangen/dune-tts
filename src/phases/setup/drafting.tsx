@@ -252,14 +252,7 @@ export const phase: Phase = {
       flippedTokens[i].setRotationSmooth(Vector(0, angle, 180));
     }
 
-    await waitCondition(() => flippedTokens.every((t) => t.isSmoothMoving() === false));
-
-    // unlock all tokens
-    for (let i = 0; i <= count - 1; i++) {
-      flippedTokens[i].setLock(false);
-    }
-
-    await waitCondition(() => flippedTokens.every((t) => t.resting === true));
+    await waitCondition(() => flippedTokens.every((t) => t.isSmoothMoving() === false && t.resting === true));
 
     const combo = flippedTokens.map((t) => ({
       token: t,

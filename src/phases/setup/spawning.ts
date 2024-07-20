@@ -112,11 +112,12 @@ export const phase: Phase = {
       { name: "Cielago Depression", position: Vector(-0.33, y, -4.18) },
       { name: "Cielago South", position: Vector(0.59, y, -5.89) },
       { name: "Cielago East", position: Vector(2.76, y, -5.35) },
+      { name: "Cielago\nWest", position: Vector(-2.26, y, -3.42) },
       { name: "False Wall East", position: Vector(3.1, y, -2.88) },
       { name: "Pasty Mesa", position: Vector(4.41, y, 0.03) },
       { name: "Shieldwall", position: Vector(2.54, y, 2.25) },
       { name: "Hark\nPass", position: Vector(1.1, y, -1.13) },
-      { name: "Minor Erg", position: Vector(2.34, y, 0.12) },
+      { name: "Minor\nErg", position: Vector(2.34, y, 0.12) },
       { name: "Imperial Basin", position: Vector(1.04, y, 2.98) },
       { name: "Arsunt", position: Vector(-0.26, y, 2.03) },
       { name: "Hagga Basin", position: Vector(-1.65, y, 2.62) },
@@ -127,7 +128,6 @@ export const phase: Phase = {
       { name: "Habbana Erg", position: Vector(-5.17, y, -1.47) },
       { name: "Habbana\nRidge Flat", position: Vector(-4.36, y, -4.45) },
       { name: "Maridian", position: Vector(-1.82, y, -5.76) },
-      { name: "Cielago\nWest", position: Vector(-2.26, y, -3.42) },
       { name: "Wind\nPass\nNorth", position: Vector(-1.3, y, -1.18) },
       { name: "Wind\nPass", position: Vector(-1.69, y, -0.27) },
       { name: "Rock Outcroppings", position: Vector(-4.57, y, 4.55), rotation: Vector(0, 320, 0) },
@@ -142,8 +142,8 @@ export const phase: Phase = {
       { name: "South Mesa", position: Vector(5.35, y, -3.79), rotation: Vector(0, 310, 0) },
       { name: "Bight of\nthe Cliff", position: Vector(-6.05, y, 2.21) },
       { name: "False\nWall\nWest", position: Vector(-3.01, y, -2.2) },
-      { name: "Rim Wall West", position: Vector(2.62, y, 4.18), rotation: Vector(0, 300, 0) },
       { name: "False Wall East", position: Vector(1.28, y, 0.22), rotation: Vector(0, 270, 0) },
+      { name: "Rim Wall West", position: Vector(2.62, y, 4.18), rotation: Vector(0, 300, 0) },
     ];
 
     for (const territory of territoryNames.sort((a, b) => a.position.z - b.position.z)) {
@@ -155,7 +155,7 @@ export const phase: Phase = {
       });
       obj.interactable = false;
 
-      if (obj.UI.getXml()) {
+      if (obj.UI.getXml() === "") {
         obj.UI.setXml(
           t.XmlUI,
           t.CustomUIAssets.map((asset) => ({
@@ -179,7 +179,7 @@ export const phase: Phase = {
     ];
 
     for (const stronghold of strongholdNames.sort((a, b) => a.position.z - b.position.z)) {
-      const t = defineText({ text: stronghold.name, frontColor: "#000000", backColor: "#FDFDB6" });
+      const t = defineText({ text: stronghold.name, frontColor: "#000000", backColor: "#FDFDD4" });
       const obj = await Forge.spawnObject(t, {
         position: stronghold.position,
         rotation: Vector(0, 0, 0),

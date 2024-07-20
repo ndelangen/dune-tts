@@ -71,8 +71,12 @@ onLoad = (script_state) => {
 
     if (state.phases.length === 0) {
       api.setState({
-        phases: [drafting.phase.name, draftingTrading.phase.name, spawning.phase.name],
-        // phases: [spawning.phase.name],
+        phases: [
+          //
+          drafting.phase.name,
+          // draftingTrading.phase.name,
+          spawning.phase.name,
+        ],
       });
     }
 
