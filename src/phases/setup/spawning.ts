@@ -4,6 +4,9 @@ import { define } from "../../objects/terratories";
 import { defineBorder } from "../../objects/border";
 import { defineText } from "../../objects/text";
 import { defineCity, defineOrnithopter, defineSietch } from "../../objects/decals";
+import { defineShield } from "../../objects/shield";
+import { getSlottedRingPositions } from "../../utils/circle";
+import { round } from "../../utils/math";
 
 const name = "spawn";
 
@@ -34,8 +37,8 @@ export const phase: Phase = {
 
     let startTime = Time.time;
     const end = Vector(0, 180, 0);
-    const duration = 14;
-    // const duration = 1;
+    // const duration = 14;
+    const duration = 1;
 
     const targetRotations = pieces.map((piece) => piece.getRotation());
     const targetScales = pieces.map((piece) => piece.getScale());
@@ -58,11 +61,18 @@ export const phase: Phase = {
       await waitFrames(1);
     }
 
+    for (const piece of pieces) {
+      const index = pieces.indexOf(piece);
+      piece.setRotation(end);
+      piece.setScale(targetScales[index]);
+      piece.setPosition(targetPositions[index]);
+    }
+
     const border = defineBorder();
     const borderObj = await Forge.spawnObject(border, {
       position: Vector(0, 0, 0),
       rotation: Vector(0, 180, 0),
-      scale: Vector(30.1, 9.3, 30.1),
+      scale: Vector(5.1, 9, 5.1),
     });
     borderObj.interactable = false;
 
@@ -73,29 +83,24 @@ export const phase: Phase = {
       const t = 1 - Math.pow(1 - (Time.time - startTime) / 1, 1);
 
       borderObj.setPosition(Vector.lerp(Vector(0, 0, 0), Vector(0, 1.62, 0), t));
-      borderObj.setScale(Vector.lerp(Vector(8.1, 9.3, 8.1), Vector(9.3, 9.3, 9.3), t));
+      borderObj.setScale(Vector.lerp(Vector(5.1, 9, 5.1), Vector(7.3, 9.0, 7.3), t));
       borderObj.setColorTint(Color(current.r, current.g, current.b, t));
       await waitFrames(1);
     }
 
-    borderObj.setScale(Vector(9.3, 9.3, 9.3));
+    borderObj.setScale(Vector(7.3, 9.0, 7.3));
     borderObj.setColorTint(Color(current.r, current.g, current.b, 1));
 
     startTime = Time.time;
-    while (Time.time - startTime <= 2) {
+    while (Time.time - startTime <= 1) {
       for (const piece of pieces) {
-        const t = Math.min(1 - Math.pow(1 - (Time.time - startTime) / 4, 2) + 0.6, 1);
-
-        piece.setColorTint(Color(t, t, t));
+        const t = Math.min((Time.time - startTime) / 1, 1);
+        piece.setColorTint(Color(0.5, 0.5, 0.5).lerp(Color(1, 1, 1), t) as any as Color);
       }
       await waitFrames(1);
     }
 
     for (const piece of pieces) {
-      const index = pieces.indexOf(piece);
-      piece.setRotation(end);
-      piece.setScale(targetScales[index]);
-      piece.setPosition(targetPositions[index]);
       piece.setColorTint(Color(1, 1, 1));
     }
 
@@ -222,17 +227,13 @@ export const phase: Phase = {
       obj.interactable = false;
 
       if (type === cityDecal) {
-        log(height);
-        log(height * -1);
         const a = await Forge.spawnObject(orniDecal, {
-          position: stronghold.position.add(Vector(0, 0.0, height * -3)),
+          position: stronghold.position.add(Vector(0, 0.0, height * -2.5)),
           rotation: Vector(0, 180, 0),
           scale: Vector(0.3, 1, 0.3),
         });
         a.interactable = false;
       }
-
-      // await waitFrames(1);
     }
 
     // const text = defineText({ text: "Board spawned!" });
@@ -253,6 +254,47 @@ export const phase: Phase = {
     // }
     // textObj.UI.show("root");
     // await waitTime(0.2);
+
+    function getAngleBetweenVectors(v1: Vector, v2: Vector): number {
+      const deltaX = v2.x - v1.x;
+      const deltaZ = v2.z - v1.z;
+      const angleRadians = Math.atan2(deltaZ, deltaX);
+      const angleDegrees = angleRadians * (180 / Math.PI);
+      return -90 - angleDegrees;
+    }
+
+    const handZoneRotations = getSlottedRingPositions(Vector(0, 2, 0), 16, tokens.length, 0)
+      .map((position) => ({
+        position,
+        angle: round(getAngleBetweenVectors(Vector(0, 0, 0), position)),
+      }))
+      .sort((a, b) => a.angle - b.angle);
+
+    const sortedTokens = tokens.sort((a, b) => {
+      const ra = round(getAngleBetweenVectors(Vector(0, 0, 0), a.getPosition()));
+      const rb = round(getAngleBetweenVectors(Vector(0, 0, 0), b.getPosition()));
+
+      return ra - rb;
+    });
+
+    for (let i = 0; i < sortedTokens.length; i++) {
+      const token = sortedTokens[i];
+      const { angle, position } = handZoneRotations[i];
+
+      const faction = s.data?.factions[token.getGMNotes()];
+
+      if (!faction) {
+        return;
+      }
+
+      const shield = await Forge.spawnObject(defineShield({ image: faction.shield }), {
+        position: position,
+        rotation: Vector(0, angle, 0),
+        scale: Vector(0.6, 0.6, 0.6),
+      });
+
+      shield.interactable = false;
+    }
 
     broadcastToAll("Board spawned!");
 

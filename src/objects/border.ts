@@ -42,7 +42,7 @@ export const defineBorder = () => ({
   Hands: false,
   CustomMesh: {
     MeshURL:
-      "https://steamusercontent-a.akamaihd.net/ugc/2501267533360142156/EE6F31C81AF3B4DC37DC50709B1D50B14A17E6FC/",
+      "https://steamusercontent-a.akamaihd.net/ugc/2501267533360144140/FB01B1FCBB1BBBDD61EDC0845E6BE0DCF7515FD8/",
     DiffuseURL: "",
     NormalURL: "",
     ColliderURL: "",
