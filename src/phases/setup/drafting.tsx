@@ -189,7 +189,7 @@ export const phase: Phase = {
     }
 
     const tokenPositions = getSlottedRingPositions(Vector(0, 2, 0), 9, flippedTokens.length, 0);
-    const handZonePositions = getSlottedRingPositions(Vector(0, 2, 0), 20, flippedTokens.length, 0);
+    const handZonePositions = getSlottedRingPositions(Vector(0, 4.39, 0), 18, flippedTokens.length, 0);
 
     // respawn tokens with LuaScript removed
     for (let i = 0; i <= flippedTokens.length - 1; i++) {
@@ -321,7 +321,7 @@ export const phase: Phase = {
       const angle = getAngleBetweenVectors(Vector(0, 0, 0), tokenPositions[i]);
       handZone.setPosition(handZonePositions[i]);
       handZone.setRotation(Vector(0, angle, 0));
-      handZone.setScale(Vector(11, 6, 6));
+      handZone.setScale(Vector(11, 6, 2));
 
       if (player) {
         player.changeColor(color);

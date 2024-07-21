@@ -80,7 +80,7 @@ onLoad = (script_state) => {
         phases: [
           //
           drafting.phase.name,
-          draftingTrading.phase.name,
+          // draftingTrading.phase.name,
           spawning.phase.name,
         ],
       });

@@ -1,12 +1,17 @@
 import { Forge, waitCondition, waitFrames, waitTime } from "@typed-tabletop-simulator/lib";
 import { type Phase } from "../../utils/phases-types";
-import { define } from "../../objects/terratories";
+import { defineTerritories } from "../../objects/terratories";
 import { defineBorder } from "../../objects/border";
 import { defineText } from "../../objects/text";
 import { defineCity, defineOrnithopter, defineSietch } from "../../objects/decals";
 import { defineShield } from "../../objects/shield";
 import { getSlottedRingPositions } from "../../utils/circle";
 import { round } from "../../utils/math";
+import { defineFog } from "../../objects/fog";
+import { matchColorsToFactions } from "../../utils/color";
+import { relative, relativeTo } from "../../utils/relative";
+import { define } from "../../objects/disc";
+import { BASEURL } from "../../utils/BASEURL";
 
 const name = "spawn";
 
@@ -15,7 +20,7 @@ export const phase: Phase = {
   enterForwards: async (s, api) => {
     broadcastToAll("Spawning board...");
 
-    const all = define();
+    const all = defineTerritories();
 
     const pieces = await Promise.all(
       all.map(async (def) => {
@@ -236,6 +241,8 @@ export const phase: Phase = {
       }
     }
 
+    broadcastToAll("Board spawned!");
+
     // const text = defineText({ text: "Board spawned!" });
     // const textObj = await Forge.spawnObject(text, {
     //   position: Vector(0, 5, 0),
@@ -263,7 +270,7 @@ export const phase: Phase = {
       return -90 - angleDegrees;
     }
 
-    const handZoneRotations = getSlottedRingPositions(Vector(0, 2, 0), 16, tokens.length, 0)
+    const handZoneRotations = getSlottedRingPositions(Vector(0, 4.54, 0), 16, tokens.length, 0)
       .map((position) => ({
         position,
         angle: round(getAngleBetweenVectors(Vector(0, 0, 0), position)),
@@ -277,6 +284,7 @@ export const phase: Phase = {
       return ra - rb;
     });
 
+    // shields
     for (let i = 0; i < sortedTokens.length; i++) {
       const token = sortedTokens[i];
       const { angle, position } = handZoneRotations[i];
@@ -288,7 +296,7 @@ export const phase: Phase = {
       }
 
       const shield = await Forge.spawnObject(defineShield({ image: faction.shield }), {
-        position: position,
+        position: position.setAt("y", 1.57),
         rotation: Vector(0, angle, 0),
         scale: Vector(0.6, 0.6, 0.6),
       });
@@ -296,7 +304,46 @@ export const phase: Phase = {
       shield.interactable = false;
     }
 
-    broadcastToAll("Board spawned!");
+    // hidden areas
+    const factions = tokens.map((token) => token.getGMNotes());
+    const factionColors = matchColorsToFactions(factions.map<[string, any]>((c) => [c, s.data?.factions[c].colors]));
+
+    await Promise.all(
+      handZoneRotations.map(async ({ angle, position: pos }, i) => {
+        if (!s.data?.factions) {
+          return;
+        }
+
+        const factionName = sortedTokens[i].getGMNotes();
+        const color = factionColors[factionName];
+        const faction = s.data.factions[factionName];
+
+        await Forge.spawnObject(defineFog({ color }), {
+          ...relativeTo(
+            [pos, Vector(0, angle, 0)], // base
+            [Vector(0, 0, -6), Vector(0, 0, 0)] // offset
+          ),
+          scale: Vector(11, 6, 11),
+        });
+
+        await Promise.all(
+          faction.leaders.map(async (leader, index, l) => {
+            await Forge.spawnObject(define({ front: leader, back: faction.logo, name: leader }), {
+              ...relativeTo(
+                [pos, Vector(0, angle, 0)], // base
+                [Vector((l.length * -1.2) / 2 + index * 1.2, 0, -1), Vector(0, 180, 0)] // offset
+              ),
+              scale: Vector(0.6, 0.6, 0.6),
+            });
+            return;
+          })
+        );
+
+        return;
+      })
+    );
+
+    broadcastToAll("Player assets spawned!");
 
     return;
   },

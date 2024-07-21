@@ -43,3 +43,13 @@ export const relative = (base: [Vector, Vector], offset: [Vector, Vector]): [Vec
 
   return [newPosition, newRotation];
 };
+
+interface Obj {
+  position: Vector;
+  rotation: Vector;
+}
+
+export const relativeTo = (base: [Vector, Vector], offset: [Vector, Vector]): Obj => {
+  const [position, rotation] = relative(base, offset);
+  return { position, rotation };
+};

@@ -75,7 +75,7 @@ function defineTerritory({ mesh, image, collider, name, description }: Territory
   };
 }
 
-export function define() {
+export function defineTerritories() {
   return [
     defineTerritory({
       name: "Arrakeen",
