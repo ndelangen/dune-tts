@@ -69,11 +69,17 @@ onLoad = (script_state) => {
       return;
     }
 
+    // find player with steam_name Central419, place them in white seat
+    const central = Player.getPlayers().find((p) => p.steam_name === "Central419");
+    if (central) {
+      central.changeColor("White");
+    }
+
     if (state.phases.length === 0) {
       api.setState({
         phases: [
           //
-          drafting.phase.name,
+          // drafting.phase.name,
           // draftingTrading.phase.name,
           spawning.phase.name,
         ],

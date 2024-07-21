@@ -5,6 +5,7 @@ interface DiscInput {
   back: string;
   name: string;
   count?: number;
+  tags?: string[];
 }
 
 export function define(input: DiscInput) {
@@ -31,7 +32,7 @@ function defineDisc(input: DiscInput) {
       scaleZ: 1,
     },
     Nickname: input.name || "",
-    Tags: ["coded"],
+    Tags: ["coded", ...(input.tags || [])],
     Description: "",
     GMNotes: "",
     AltLookAngle: {
@@ -168,7 +169,7 @@ function defineStack(input: DiscInput) {
       scaleZ: 1,
     },
     Nickname: input.name || "",
-    Tags: ["coded"],
+    Tags: ["coded", ...(input.tags || [])],
     Description: "",
     GMNotes: "",
     AltLookAngle: {
@@ -294,6 +295,7 @@ function defineStack(input: DiscInput) {
 
 interface SimpleInput {
   name?: string;
+  tags?: string[];
 }
 
 export function simple(input: SimpleInput) {
@@ -312,7 +314,7 @@ export function simple(input: SimpleInput) {
       scaleZ: 1,
     },
     Nickname: input.name || "",
-    Tags: ["coded"],
+    Tags: ["coded", ...(input.tags || [])],
     Description: "",
     GMNotes: "",
     AltLookAngle: {

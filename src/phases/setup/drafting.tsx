@@ -18,11 +18,6 @@ async function setup(s: State, api: Api) {
     return;
   }
 
-  // DEBUG
-  // Player.getPlayers()
-  //   .find((p) => p.steam_name === "Central419")
-  //   ?.changeColor("White");
-
   const center = Vector(0, 2, 0);
   const factions = Object.values(s.data.factions);
   const names = Object.keys(s.data.factions);
@@ -34,6 +29,7 @@ async function setup(s: State, api: Api) {
     rotation: Vector(0, 180, 0),
     scale: Vector(1, 1, 1),
   });
+
   info.setColorTint({ r: 0.5, g: 0.5, b: 0.5, a: 0.0 });
   info.interactable = false;
 
@@ -47,6 +43,7 @@ async function setup(s: State, api: Api) {
         front: factions[i].logo,
         back: factions[i].logo,
         name: formatFactionName(names[i]),
+        tags: ["faction_token"],
       }),
       GMNotes: names[i],
       ColorDiffuse: { r: 0.7, g: 0.7, b: 0.7 },
@@ -64,6 +61,7 @@ async function setup(s: State, api: Api) {
         end
       `,
     } satisfies ReturnType<typeof disc.define>;
+
     tokens.push(
       await Forge.spawnObject(data, {
         position: positions[i],
@@ -125,7 +123,7 @@ async function setup(s: State, api: Api) {
             list={newMessages}
             onClick={async () => {
               Wait.stop(timer);
-              await api.forward();
+              api.forward();
 
               info.destruct();
             }}
@@ -180,7 +178,7 @@ export const phase: Phase = {
     await waitTime(0.2);
 
     // delete all objects
-    const allTokens = getObjectsWithAllTags(["coded"]);
+    const allTokens = getObjectsWithAllTags(["faction_token"]);
     const flippedTokens = allTokens.filter((o) => o.getDescription() !== "");
     const unusedTokens = allTokens.filter((o) => o.getDescription() === "");
 
@@ -190,7 +188,7 @@ export const phase: Phase = {
       unusedTokens[i].destruct();
     }
 
-    const tokenPositions = getSlottedRingPositions(Vector(0, 2, 0), 10, flippedTokens.length, 0);
+    const tokenPositions = getSlottedRingPositions(Vector(0, 2, 0), 9, flippedTokens.length, 0);
     const handZonePositions = getSlottedRingPositions(Vector(0, 2, 0), 20, flippedTokens.length, 0);
 
     // respawn tokens with LuaScript removed
@@ -252,7 +250,17 @@ export const phase: Phase = {
       flippedTokens[i].setRotationSmooth(Vector(0, angle, 180));
     }
 
+    flippedTokens.forEach((t) => {
+      t.interactable = false;
+      t.setLock(false);
+    });
+
     await waitCondition(() => flippedTokens.every((t) => t.isSmoothMoving() === false && t.resting === true));
+
+    flippedTokens.forEach((t) => {
+      t.interactable = true;
+      t.setLock(true);
+    });
 
     const combo = flippedTokens.map((t) => ({
       token: t,
@@ -322,6 +330,34 @@ export const phase: Phase = {
         broadcastToAll(player.steam_name + " should sit in " + color + ", playing " + formatFactionName(c.name));
       }
     }
+
+    await Promise.all(
+      flippedTokens.map(async (t) => {
+        const data = t.getData();
+
+        data.Locked = true;
+        data.Tags = ["coded"];
+        data.AttachedSnapPoints = [
+          {
+            Position: Vector(0, 0, 0),
+            Rotation: Vector(0, 0, 0),
+            Tags: ["faction_token"],
+          },
+        ];
+        data.Description = "";
+
+        const obj = await Forge.spawnObject(data, {
+          position: t.getPosition().add(Vector(0, -0.1, 0)),
+          rotation: t.getRotation(),
+          scale: t.getScale(),
+        });
+
+        obj.setLock(true);
+        obj.interactable = false;
+
+        return;
+      })
+    );
 
     return true;
   },

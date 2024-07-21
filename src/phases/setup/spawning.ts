@@ -3,6 +3,7 @@ import { type Phase } from "../../utils/phases-types";
 import { define } from "../../objects/terratories";
 import { defineBorder } from "../../objects/border";
 import { defineText } from "../../objects/text";
+import { defineCity, defineOrnithopter, defineSietch } from "../../objects/decals";
 
 const name = "spawn";
 
@@ -34,13 +35,13 @@ export const phase: Phase = {
     let startTime = Time.time;
     const end = Vector(0, 180, 0);
     const duration = 14;
-    // const duration = 4;
+    // const duration = 1;
 
     const targetRotations = pieces.map((piece) => piece.getRotation());
     const targetScales = pieces.map((piece) => piece.getScale());
     const targetPositions = pieces.map((piece) => piece.getPosition());
 
-    while (Time.time - startTime < duration) {
+    while (Time.time - startTime <= duration) {
       for (const piece of pieces) {
         const index = pieces.indexOf(piece);
         const start = targetRotations[index];
@@ -68,7 +69,7 @@ export const phase: Phase = {
     startTime = Time.time;
     const current = borderObj.getColorTint();
 
-    while (Time.time - startTime < 1) {
+    while (Time.time - startTime <= 1) {
       const t = 1 - Math.pow(1 - (Time.time - startTime) / 1, 1);
 
       borderObj.setPosition(Vector.lerp(Vector(0, 0, 0), Vector(0, 1.62, 0), t));
@@ -81,7 +82,7 @@ export const phase: Phase = {
     borderObj.setColorTint(Color(current.r, current.g, current.b, 1));
 
     startTime = Time.time;
-    while (Time.time - startTime < 2) {
+    while (Time.time - startTime <= 2) {
       for (const piece of pieces) {
         const t = Math.min(1 - Math.pow(1 - (Time.time - startTime) / 4, 2) + 0.6, 1);
 
@@ -166,7 +167,7 @@ export const phase: Phase = {
       }
 
       obj.UI.show("root");
-      await waitFrames(1);
+      // await waitFrames(1);
     }
 
     const strongholdNames: Location[] = [
@@ -187,7 +188,7 @@ export const phase: Phase = {
       });
       obj.interactable = false;
 
-      if (obj.UI.getXml()) {
+      if (obj.UI.getXml() === "") {
         obj.UI.setXml(
           t.XmlUI,
           t.CustomUIAssets.map((asset) => ({
@@ -198,7 +199,40 @@ export const phase: Phase = {
       }
 
       obj.UI.show("root");
-      await waitFrames(1);
+      // await waitFrames(1);
+    }
+
+    const tokens = getObjectsWithAllTags(["faction_token"]);
+    tokens.forEach((token) => {
+      token.setLock(false);
+    });
+
+    const orniDecal = defineOrnithopter();
+    const cityDecal = defineCity();
+    const sietchDecal = defineSietch();
+
+    for (const stronghold of strongholdNames) {
+      const type = stronghold.name.includes("Sietch") ? sietchDecal : cityDecal;
+      const height = 0.05 + stronghold.name.split("\n").length * 0.15;
+      const obj = await Forge.spawnObject(type, {
+        position: stronghold.position.add(Vector(0, 0.09, height)),
+        rotation: Vector(0, 180, 0),
+        scale: Vector(0.3, 1, 0.3),
+      });
+      obj.interactable = false;
+
+      if (type === cityDecal) {
+        log(height);
+        log(height * -1);
+        const a = await Forge.spawnObject(orniDecal, {
+          position: stronghold.position.add(Vector(0, 0.0, height * -3)),
+          rotation: Vector(0, 180, 0),
+          scale: Vector(0.3, 1, 0.3),
+        });
+        a.interactable = false;
+      }
+
+      // await waitFrames(1);
     }
 
     // const text = defineText({ text: "Board spawned!" });

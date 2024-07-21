@@ -14,7 +14,7 @@ export const phase: Phase = {
   name,
   enterForwards: async (s, api) => {
     broadcastToAll("Trade factions by swapping seat with other players. When ready, flip your faction token.");
-    const tokens = getObjectsWithAllTags(["coded"]);
+    const tokens = getObjectsWithAllTags(["faction_token"]);
 
     tokens.forEach((token) => {
       token.setLock(false);

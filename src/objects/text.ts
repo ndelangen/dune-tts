@@ -14,9 +14,9 @@ export function defineText(input: TextInput) {
     GUID: "bee9ec",
     Name: "Custom_Model",
     Transform: {
-      posX: -14.0,
-      posY: 1.97,
-      posZ: -128.0,
+      posX: 0.0,
+      posY: 0.0,
+      posZ: 0.0,
       rotX: 0.0,
       rotY: 0.0,
       rotZ: 0.0,
@@ -26,7 +26,7 @@ export function defineText(input: TextInput) {
     },
     Nickname: "",
     Description: "",
-    GMNotes: "10",
+    GMNotes: "",
     AltLookAngle: {
       x: 0.0,
       y: 0.0,
