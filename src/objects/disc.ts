@@ -3,7 +3,7 @@ import { BASEURL } from "../utils/BASEURL";
 interface DiscInput {
   front: string;
   back: string;
-  name: string;
+  name?: string;
   count?: number;
   tags?: string[];
 }

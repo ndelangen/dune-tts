@@ -1,4 +1,4 @@
-import { Forge, waitCondition, waitFrames, waitTime } from "@typed-tabletop-simulator/lib";
+import { Forge, waitFrames } from "@typed-tabletop-simulator/lib";
 import { type Phase } from "../../utils/phases-types";
 import { defineTerritories } from "../../objects/terratories";
 import { defineBorder } from "../../objects/border";
@@ -9,9 +9,12 @@ import { getSlottedRingPositions } from "../../utils/circle";
 import { round } from "../../utils/math";
 import { defineFog } from "../../objects/fog";
 import { matchColorsToFactions } from "../../utils/color";
-import { relative, relativeTo } from "../../utils/relative";
+import { relativeTo } from "../../utils/relative";
 import { define } from "../../objects/disc";
-import { BASEURL } from "../../utils/BASEURL";
+import { defineAlliance } from "../../objects/alliance";
+import { formatFactionName } from "../../utils/format";
+import { defineCard } from "../../objects/card";
+import { defineLine } from "../../objects/line";
 
 const name = "spawn";
 
@@ -270,7 +273,7 @@ export const phase: Phase = {
       return -90 - angleDegrees;
     }
 
-    const handZoneRotations = getSlottedRingPositions(Vector(0, 4.54, 0), 16, tokens.length, 0)
+    const handZoneRotations = getSlottedRingPositions(Vector(0, 3.19, 0), 17, tokens.length, 0)
       .map((position) => ({
         position,
         angle: round(getAngleBetweenVectors(Vector(0, 0, 0), position)),
@@ -314,30 +317,97 @@ export const phase: Phase = {
           return;
         }
 
-        const factionName = sortedTokens[i].getGMNotes();
-        const color = factionColors[factionName];
-        const faction = s.data.factions[factionName];
+        const factionId = sortedTokens[i].getGMNotes();
+        const factionName = formatFactionName(factionId);
+        const color = factionColors[factionId];
+        const faction = s.data.factions[factionId];
 
         await Forge.spawnObject(defineFog({ color }), {
           ...relativeTo(
-            [pos, Vector(0, angle, 0)], // base
+            [pos, Vector(0, angle, 0)],
             [Vector(0, 0, -6), Vector(0, 0, 0)] // offset
           ),
           scale: Vector(11, 6, 11),
         });
 
         await Promise.all(
-          faction.leaders.map(async (leader, index, l) => {
-            await Forge.spawnObject(define({ front: leader, back: faction.logo, name: leader }), {
-              ...relativeTo(
-                [pos, Vector(0, angle, 0)], // base
-                [Vector((l.length * -1.2) / 2 + index * 1.2, 0, -1), Vector(0, 180, 0)] // offset
-              ),
-              scale: Vector(0.6, 0.6, 0.6),
-            });
-            return;
+          faction.leaders.flatMap((leader, index, l) => {
+            const results = [];
+
+            const { position, rotation } = relativeTo(
+              [pos, Vector(0, angle, 0)],
+              [Vector(((l.length - 1) / 2) * -1.2 + index * 1.2, 0, -2), Vector(0, 180, 0)]
+            );
+            const definition = define({ front: leader, back: faction.logo, name: leader, tags: ["leader_token"] });
+
+            // token
+            results.push(
+              Forge.spawnObject(definition, {
+                position,
+                rotation,
+                scale: Vector(0.6, 0.6, 0.6),
+              })
+            );
+
+            // snap point
+            results.push(
+              Forge.spawnObject(
+                {
+                  ...definition,
+                  Locked: true,
+                  AttachedSnapPoints: [
+                    { Position: { x: 0, y: 0, z: 0 }, Rotation: { x: 0, y: 0, z: 0 }, Tags: ["leader_token"] },
+                  ],
+                },
+                {
+                  position: position.add(Vector(0, -0.35, 0)),
+                  rotation,
+                  scale: Vector(0.6, 0.6, 0.6),
+                }
+              ).then((t) => (t.interactable = false))
+            );
+
+            return results;
           })
         );
+
+        await Forge.spawnObject(
+          defineAlliance({
+            name: `${factionName} Alliance`,
+            front: faction.alliance,
+            back: s.data.backs.alliance,
+            base: faction.logo,
+          }),
+          {
+            ...relativeTo([pos, Vector(0, angle, 0)], [Vector(5, 0, 1), Vector(0, 0, 0)]),
+            scale: Vector(0.6, 0.6, 0.6),
+          }
+        );
+
+        await Forge.spawnObject(
+          {
+            ...define({ front: faction.logo, back: faction.logo }),
+            Locked: true,
+            AttachedSnapPoints: [
+              {
+                Position: { x: 0, y: 0, z: 0 },
+                Rotation: { x: 0, y: 0, z: 0 },
+                Tags: ["alliance_stand"],
+              },
+            ],
+          },
+          {
+            ...relativeTo([pos, Vector(0, angle, 0)], [Vector(5, -0.35, 1), Vector(0, 0, 0)]),
+            scale: Vector(0.6, 0.6, 0.6),
+          }
+        ).then((t) => (t.interactable = false));
+
+        await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.65, width: 3, url: faction.logo }), {
+          ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.35, 4.4), Vector(0, 0, 0)]),
+        }).then((t) => (t.interactable = false));
+        await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.65, width: 4 }), {
+          ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.36, 4.4), Vector(0, 0, 0)]),
+        }).then((t) => (t.interactable = false));
 
         return;
       })

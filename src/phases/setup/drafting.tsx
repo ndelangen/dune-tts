@@ -1,17 +1,13 @@
-import { applyUi, render, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
+import { applyUi, ttsUi, ttsUiFragment } from "@typed-tabletop-simulator/ui";
 import { Forge, waitCondition, waitFrames, waitTime } from "@typed-tabletop-simulator/lib";
-import { getArchPositions, getRingPositions, getSlottedRingPositions } from "../../utils/circle";
-import { Api, colors, State, type Phase } from "../../utils/phases-types";
+import { getRingPositions, getSlottedRingPositions } from "../../utils/circle";
+import { Api, State, type Phase } from "../../utils/phases-types";
 import * as disc from "../../objects/disc";
 import { App } from "../../App";
 import { matchColorsToFactions } from "../../utils/color";
+import { formatFactionName } from "../../utils/format";
 
 const name = "drafting";
-
-const formatFactionName = (name: string) => {
-  const sections = name.split("-");
-  return sections.map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
-};
 
 async function setup(s: State, api: Api) {
   if (s.data === null) {
@@ -189,7 +185,7 @@ export const phase: Phase = {
     }
 
     const tokenPositions = getSlottedRingPositions(Vector(0, 2, 0), 9, flippedTokens.length, 0);
-    const handZonePositions = getSlottedRingPositions(Vector(0, 4.39, 0), 18, flippedTokens.length, 0);
+    const handZonePositions = getSlottedRingPositions(Vector(0, 3.71, 0), 18, flippedTokens.length, 0);
 
     // respawn tokens with LuaScript removed
     for (let i = 0; i <= flippedTokens.length - 1; i++) {
@@ -215,7 +211,7 @@ export const phase: Phase = {
     // randomize the positions of the flipped tokens
     const count = flippedTokens.length;
     for (let i = 0; i <= count * 2; i++) {
-      await waitFrames(5);
+      await waitCondition(() => flippedTokens.every((t) => t.isSmoothMoving() === false));
 
       const a = i % 2;
       let b = Math.floor(Math.random() * count);
@@ -321,7 +317,7 @@ export const phase: Phase = {
       const angle = getAngleBetweenVectors(Vector(0, 0, 0), tokenPositions[i]);
       handZone.setPosition(handZonePositions[i]);
       handZone.setRotation(Vector(0, angle, 0));
-      handZone.setScale(Vector(11, 6, 2));
+      handZone.setScale(Vector(11, 5, 1));
 
       if (player) {
         player.changeColor(color);

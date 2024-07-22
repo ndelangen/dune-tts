@@ -1,3 +1,5 @@
+import { BASEURL } from "../utils/BASEURL";
+
 let deckIndex = 500;
 
 const getCardId = (deckId: number, card: number) => {
@@ -70,8 +72,8 @@ export function defineCard(input: CardInput) {
     SidewaysCard: false,
     CustomDeck: {
       [deckIndex]: {
-        FaceURL: input.front,
-        BackURL: input.back,
+        FaceURL: BASEURL + input.front,
+        BackURL: BASEURL + input.back,
         NumWidth: 1,
         NumHeight: 1,
         BackIsHidden: true,
@@ -143,8 +145,8 @@ export function defineDeck(input: CardInput[]) {
 
     CustomDeck: results.reduce<CardCustomData["CustomDeck"]>((acc, result) => {
       acc[result.deck] = {
-        FaceURL: result.card.front,
-        BackURL: result.card.back,
+        FaceURL: BASEURL + result.card.front,
+        BackURL: BASEURL + result.card.back,
         NumWidth: 1,
         NumHeight: 1,
         BackIsHidden: true,
@@ -202,8 +204,8 @@ export function defineDeck(input: CardInput[]) {
       SidewaysCard: false,
       CustomDeck: {
         [result.deck]: {
-          FaceURL: result.card.front,
-          BackURL: result.card.back,
+          FaceURL: BASEURL + result.card.front,
+          BackURL: BASEURL + result.card.back,
           NumWidth: 1,
           NumHeight: 1,
           BackIsHidden: true,
