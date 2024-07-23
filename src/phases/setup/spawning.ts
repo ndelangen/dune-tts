@@ -10,7 +10,7 @@ import { round } from "../../utils/math";
 import { defineFog } from "../../objects/fog";
 import { matchColorsToFactions } from "../../utils/color";
 import { relativeTo } from "../../utils/relative";
-import { define } from "../../objects/disc";
+import { define, simple } from "../../objects/disc";
 import { defineAlliance } from "../../objects/alliance";
 import { formatFactionName } from "../../utils/format";
 import { defineCard } from "../../objects/card";
@@ -379,7 +379,7 @@ export const phase: Phase = {
             base: faction.logo,
           }),
           {
-            ...relativeTo([pos, Vector(0, angle, 0)], [Vector(5, 0, 1), Vector(0, 0, 0)]),
+            ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, 0, 2.5), Vector(0, 0, 0)]),
             scale: Vector(0.6, 0.6, 0.6),
           }
         );
@@ -397,21 +397,57 @@ export const phase: Phase = {
             ],
           },
           {
-            ...relativeTo([pos, Vector(0, angle, 0)], [Vector(5, -0.35, 1), Vector(0, 0, 0)]),
+            ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.35, 2.5), Vector(0, 0, 0)]),
             scale: Vector(0.6, 0.6, 0.6),
           }
         ).then((t) => (t.interactable = false));
 
-        await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.65, width: 3, url: faction.logo }), {
-          ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.35, 4.4), Vector(0, 0, 0)]),
+        await Forge.spawnObject(simple({}), {
+          ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, 2, 4), Vector(0, 0, 0)]),
+          scale: Vector(1.0, 1.0, 1.0),
+        });
+
+        await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.6, width: 3, url: faction.logo }), {
+          ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.37, 4.9), Vector(0, 0, 0)]),
         }).then((t) => (t.interactable = false));
-        await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.65, width: 4 }), {
-          ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.36, 4.4), Vector(0, 0, 0)]),
+        await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.6, width: 4 }), {
+          ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.38, 4.9), Vector(0, 0, 0)]),
         }).then((t) => (t.interactable = false));
 
         return;
       })
     );
+
+    // define slots as spaces between players
+    // slots can contain multiple spots
+    // look for a spot for tleilaxu thanks (should be close to tleilaxu player)
+    // look for a spot for treachery cards (should be close to atreides player)
+    // look for a spot for spice, events, storm cards (should be close to fremen player)
+    // look for a spot for spice bank, should be close to emperor player
+    // all spots assigned should be adjacent
+    // create array of gaps between players
+
+    const gaps = sortedTokens.map((token, index, arr) => {
+      const center = Vector(0, 0, 0);
+      const itemA = token;
+      const angleA = getAngleBetweenVectors(itemA.getPosition(), center);
+      const itemB = arr[(index + 1) % arr.length];
+      const angleB = getAngleBetweenVectors(itemB.getPosition(), center);
+
+      const left = itemA.getGMNotes();
+      const right = itemB.getGMNotes();
+      const size = round(angleB - angleA, 0);
+      const slots = round(size / (360 / 18), 0) - 1;
+
+      return {
+        size: round(size < 0 ? size + 360 : size, 0),
+        slots,
+        left,
+        right,
+      };
+    });
+
+    log(JSON.encode(gaps));
 
     broadcastToAll("Player assets spawned!");
 
