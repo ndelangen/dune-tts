@@ -13,8 +13,8 @@ import { relativeTo } from "../../utils/relative";
 import { define, simple } from "../../objects/disc";
 import { defineAlliance } from "../../objects/alliance";
 import { formatFactionName } from "../../utils/format";
-import { defineCard } from "../../objects/card";
 import { defineLine } from "../../objects/line";
+import { assignFactions, Connection } from "../../utils/slots";
 
 const name = "spawn";
 
@@ -402,11 +402,6 @@ export const phase: Phase = {
           }
         ).then((t) => (t.interactable = false));
 
-        await Forge.spawnObject(simple({}), {
-          ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, 2, 4), Vector(0, 0, 0)]),
-          scale: Vector(1.0, 1.0, 1.0),
-        });
-
         await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.6, width: 3, url: faction.logo }), {
           ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.37, 4.9), Vector(0, 0, 0)]),
         }).then((t) => (t.interactable = false));
@@ -427,27 +422,181 @@ export const phase: Phase = {
     // all spots assigned should be adjacent
     // create array of gaps between players
 
-    const gaps = sortedTokens.map((token, index, arr) => {
-      const center = Vector(0, 0, 0);
-      const itemA = token;
-      const angleA = getAngleBetweenVectors(itemA.getPosition(), center);
-      const itemB = arr[(index + 1) % arr.length];
-      const angleB = getAngleBetweenVectors(itemB.getPosition(), center);
+    const center = Vector(0, 0, 0);
 
-      const left = itemA.getGMNotes();
-      const right = itemB.getGMNotes();
-      const size = round(angleB - angleA, 0);
-      const slots = round(size / (360 / 18), 0) - 1;
+    const gaps = sortedTokens
+      .flatMap((token, index, arr) => {
+        const itemA = token;
+        const angleA = getAngleBetweenVectors(itemA.getPosition(), center);
+        const itemB = arr[(index + 1) % arr.length];
+        const angleB = getAngleBetweenVectors(itemB.getPosition(), center);
 
-      return {
-        size: round(size < 0 ? size + 360 : size, 0),
-        slots,
-        left,
-        right,
-      };
-    });
+        const left = itemA.getGMNotes();
+        const right = itemB.getGMNotes();
+        const size = round(angleB - angleA, 0);
+        const slots = round(size / (360 / 18), 0) - 1;
 
-    log(JSON.encode(gaps));
+        const results = [];
+
+        for (let i = 0; i < slots; i++) {
+          let angle = round(Vector(0, angleA, 0).add(Vector(0, (360 / 18) * (i + 1), 0)).y, 0);
+
+          if (angle < 0) {
+            angle += 360;
+          }
+
+          results.push({
+            angle,
+            left,
+            right,
+          });
+        }
+
+        return results;
+      })
+      .reduce<Record<number, Partial<Connection>>>((acc, item) => {
+        acc[item.angle] = item;
+        return acc;
+      }, {});
+
+    const allSlots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 10, 18, 0)
+      .flatMap((position) => {
+        let angle = round(getAngleBetweenVectors(position, center), 0);
+        if (angle < 0) {
+          angle += 360;
+        }
+
+        const item = gaps[angle];
+
+        if (!item || item === undefined || item === null) {
+          return [];
+        }
+
+        log({ item });
+        return [
+          {
+            ...item,
+            position,
+            angle,
+          },
+        ] as Connection[];
+      })
+      .filter((item) => item.left || item.right)
+      .map((item, index) => ({ ...item, index }));
+
+    log(JSON.encode(allSlots));
+
+    log("GAPS");
+    log({ gaps: Object.keys(gaps) });
+    log("SLOTS");
+    log({ slots: allSlots.map((s) => s.angle) });
+
+    const assigned = assignFactions(allSlots);
+    log(JSON.encode(assigned));
+
+    if (!assigned) {
+      return;
+    }
+
+    // const assignedSlots = Object.entries(assigned).reduce<Record<number, string>>((acc, [id, info]) => {
+    //   if (info) {
+    //     let angle = round(gaps[info.dataIndex].angle + (360 / 18) * (info.slotIndex + 1), 0);
+    //     log({ id, info, angle });
+
+    //     acc[angle] = id;
+    //   }
+
+    //   return acc;
+    // }, {});
+
+    // log({ assignedSlots, assigned });
+
+    // await Promise.all(
+    //   allSlots.map(async (slot) => {
+    //     let key = null;
+    //     if (gaps[assigned.bank.index].angle === slot.angle) {
+    //       //
+    //       key = "bank";
+    //     }
+
+    //     if (gaps[assigned.treachery.index].angle === slot.angle) {
+    //       //
+    //       key = "treachery";
+    //     }
+
+    //     if (gaps[assigned.tleilaxuTanks.index].angle === slot.angle) {
+    //       //
+    //       key = "tleilaxuTanks";
+    //     }
+
+    //     if (gaps[assigned.events.index].angle === slot.angle) {
+    //       //
+    //       key = "events";
+    //     }
+
+    //     const item = key;
+    //     if (item) {
+    //       await Forge.spawnObject(
+    //         {
+    //           ...simple({ name: item }),
+    //           Locked: true,
+    //           Tooltip: true,
+    //           ColorDiffuse: {
+    //             r: 32 / 255,
+    //             g: 29 / 255,
+    //             b: 29 / 255,
+    //             a: 1,
+    //           },
+    //         },
+    //         {
+    //           position: slot.position.setAt("y", 1.22),
+    //           rotation: Vector(0, slot.angle, 0),
+    //           scale: Vector(2.0, 2.0, 2.0),
+    //         }
+    //       ).then((t) => (t.interactable = true));
+    //     } else {
+    //       log({ angle: slot.angle });
+    //     }
+
+    //     return;
+    //   })
+    // );
+
+    await Promise.all(
+      Object.entries(assigned).map(async ([id, info]) => {
+        if (!info) {
+          log({ id, info });
+          return;
+        }
+
+        const { position, angle } = info;
+        if (!position || !angle) {
+          log({ id, info });
+          return;
+        }
+
+        await Forge.spawnObject(
+          {
+            ...simple({ name: id }),
+            Locked: true,
+            Tooltip: true,
+            ColorDiffuse: {
+              r: 32 / 255,
+              g: 29 / 255,
+              b: 29 / 255,
+              a: 1,
+            },
+          },
+          {
+            position: position.setAt("y", 1.22),
+            rotation: Vector(0, angle, 0),
+            scale: Vector(2.0, 2.0, 2.0),
+          }
+        ).then((t) => (t.interactable = true));
+
+        return;
+      })
+    );
 
     broadcastToAll("Player assets spawned!");
 

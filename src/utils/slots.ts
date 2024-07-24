@@ -1,20 +1,9 @@
 export interface Connection {
   left: string;
   right: string;
-  size: number;
-  slots: number;
-}
-
-interface AssignmentDetail {
-  connection: Connection;
-  slotIndex: number;
-}
-
-interface Assignment {
-  treachery: AssignmentDetail;
-  tleilaxuTanks: AssignmentDetail;
-  events: AssignmentDetail;
-  bank: AssignmentDetail;
+  index: number;
+  angle?: number;
+  position: Vector;
 }
 
 export const assignFactions = (data: Connection[]) => {
@@ -34,42 +23,17 @@ export const assignFactions = (data: Connection[]) => {
     hasEmperor ? "emperor" : hasSpacingGuild ? "spacing-guild" : "bene-gesserit",
   ];
 
-  type PossibilityItem = {
-    dataIndex: number;
-    slotIndex: number;
-    left?: string;
-    right?: string;
-  };
-
-  const possibilities = data.flatMap((connection, dataIndex) => {
-    const result = [];
-
-    for (let i = 0; i < connection.slots; i++) {
-      const item: PossibilityItem = {
-        dataIndex,
-        slotIndex: i,
-      };
-      // if (i == 0) {
-      item.left = connection.left;
-      // }
-      // if (i == connection.slots - 1) {
-      item.right = connection.right;
-      // }
-      result.push(item);
-    }
-
-    return result;
-  });
+  const possibilities = data.map((d, index) => ({ ...d, index }));
 
   const scoring = preferred.reverse();
   const long = [...possibilities, ...possibilities];
-  let best: { score: number; list: Array<PossibilityItem> | null } = { score: 0, list: null };
+  let best: { score: number; list: Array<Connection> | null } = { score: 0, list: null };
   for (let i = 0; i < possibilities.length; i++) {
     const current = long.slice(i, i + 4);
     const matches = [
       ...new Set(current.flatMap((n) => [n.left, n.right]).filter((item) => item && preferred.includes(item))),
     ];
-    const score = matches.reduce((acc, item) => acc + (scoring.indexOf(item || "") * 2 + 1), 0);
+    const score = matches.reduce((acc, item) => acc + (scoring.indexOf(item || "") + 1) * 4, 0);
     if (score > best.score) {
       best = { score: score, list: current };
     }
@@ -79,30 +43,57 @@ export const assignFactions = (data: Connection[]) => {
     return null;
   }
 
-  let bestTreachery = best.list.find((item) => item.left === preferred[0] || item.right === preferred[0]);
-  let bestTleilaxuTanks = best.list.find((item) => item.left === preferred[1] || item.right === preferred[1]);
-  let bestEvents = best.list.find((item) => item.left === preferred[2] || item.right === preferred[2]);
-  let bestBank = best.list.find((item) => item.left === preferred[3] || item.right === preferred[3]);
+  // if (console) {
+  //   console.log(best.list);
+  // }
 
-  if (!bestTreachery) {
-    bestTreachery = best.list.find((item) => item !== bestTleilaxuTanks && item !== bestEvents && item !== bestBank);
-  }
-  if (!bestTleilaxuTanks) {
-    bestTleilaxuTanks = best.list.find((item) => item !== bestTreachery && item !== bestEvents && item !== bestBank);
-  }
-  if (!bestEvents) {
-    bestEvents = best.list.find((item) => item !== bestTreachery && item !== bestTleilaxuTanks && item !== bestBank);
-  }
-  if (!bestBank) {
-    bestBank = best.list.find((item) => item !== bestTreachery && item !== bestTleilaxuTanks && item !== bestEvents);
-  }
+  // let bestTreacheryIndex = best.list.findIndex((item) => item.left === preferred[0] || item.right === preferred[0]);
+  // let bestTreachery = best.list[bestTreacheryIndex];
+  // delete best.list[bestTreacheryIndex];
+
+  // let bestTanksIndex = best.list.findIndex((item) => item?.left === preferred[1] || item?.right === preferred[1]);
+  // let bestTleilaxuTanks = best.list[bestTanksIndex];
+  // delete best.list[bestTanksIndex];
+
+  // let bestEventsIndex = best.list.findIndex((item) => item?.left === preferred[2] || item?.right === preferred[2]);
+  // let bestEvents = best.list[bestEventsIndex];
+  // delete best.list[bestEventsIndex];
+
+  // let bestBankIndex = best.list.findIndex((item) => item?.left === preferred[3] || item?.right === preferred[3]);
+  // let bestBank = best.list[bestBankIndex];
+  // delete best.list[bestBankIndex];
+
+  // if (isFalsy(bestTreachery)) {
+  //   const index = best.list.findIndex((item) => !!item);
+  //   bestTreachery = best.list[index];
+  //   delete best.list[index];
+  // }
+  // if (isFalsy(bestTleilaxuTanks)) {
+  //   const index = best.list.findIndex((item) => !!item);
+  //   bestTleilaxuTanks = best.list[index];
+  //   delete best.list[index];
+  // }
+  // if (isFalsy(bestEvents)) {
+  //   const index = best.list.findIndex((item) => !!item);
+  //   bestEvents = best.list[index];
+  //   delete best.list[index];
+  // }
+  // if (isFalsy(bestBank)) {
+  //   const index = best.list.findIndex((item) => !!item);
+  //   bestBank = best.list[index];
+  //   delete best.list[index];
+  // }
 
   const out = {
-    treachery: bestTreachery,
-    tleilaxuTanks: bestTleilaxuTanks,
-    events: bestEvents,
-    bank: bestBank,
+    treachery: best.list[0],
+    tleilaxuTanks: best.list[1],
+    events: best.list[2],
+    bank: best.list[3],
   };
+
+  // log({ out });
 
   return out;
 };
+
+const isFalsy = (value: any) => value === null || value === undefined || value === false || value === "";
