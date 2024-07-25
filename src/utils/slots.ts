@@ -3,7 +3,7 @@ export interface Connection {
   right: string;
   index: number;
   angle?: number;
-  position: Vector;
+  position?: any;
 }
 
 export const assignFactions = (data: Connection[]) => {
@@ -23,12 +23,11 @@ export const assignFactions = (data: Connection[]) => {
     hasEmperor ? "emperor" : hasSpacingGuild ? "spacing-guild" : "bene-gesserit",
   ];
 
-  const possibilities = data.map((d, index) => ({ ...d, index }));
-
   const scoring = preferred.reverse();
-  const long = [...possibilities, ...possibilities];
+  const long = [...data, ...data];
+
   let best: { score: number; list: Array<Connection> | null } = { score: 0, list: null };
-  for (let i = 0; i < possibilities.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     const current = long.slice(i, i + 4);
     const matches = [
       ...new Set(current.flatMap((n) => [n.left, n.right]).filter((item) => item && preferred.includes(item))),

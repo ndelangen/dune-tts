@@ -413,51 +413,58 @@ export const phase: Phase = {
       })
     );
 
-    // define slots as spaces between players
-    // slots can contain multiple spots
-    // look for a spot for tleilaxu thanks (should be close to tleilaxu player)
-    // look for a spot for treachery cards (should be close to atreides player)
-    // look for a spot for spice, events, storm cards (should be close to fremen player)
-    // look for a spot for spice bank, should be close to emperor player
-    // all spots assigned should be adjacent
-    // create array of gaps between players
-
     const center = Vector(0, 0, 0);
 
-    const gaps = sortedTokens
-      .flatMap((token, index, arr) => {
-        const itemA = token;
-        const angleA = getAngleBetweenVectors(itemA.getPosition(), center);
-        const itemB = arr[(index + 1) % arr.length];
-        const angleB = getAngleBetweenVectors(itemB.getPosition(), center);
+    const gaps = sortedTokens.map((token, index, arr) => {
+      const itemA = token;
+      let angleA = getAngleBetweenVectors(itemA.getPosition(), center);
+      if (angleA < 0) {
+        angleA += 360;
+      }
+      const itemB = arr[(index + 1) % arr.length];
+      let angleB = getAngleBetweenVectors(itemB.getPosition(), center);
+      if (angleB < 0) {
+        angleB += 360;
+      }
 
-        const left = itemA.getGMNotes();
-        const right = itemB.getGMNotes();
-        const size = round(angleB - angleA, 0);
-        const slots = round(size / (360 / 18), 0) - 1;
+      const left = itemA.getGMNotes();
+      const right = itemB.getGMNotes();
+      let size = round(angleB - angleA, 0);
+      if (size < 0) {
+        size += 360;
+      }
+      const slots = round(size / (360 / 18), 0) - 1;
 
-        const results = [];
+      const results = [];
 
-        for (let i = 0; i < slots; i++) {
-          let angle = round(Vector(0, angleA, 0).add(Vector(0, (360 / 18) * (i + 1), 0)).y, 0);
+      for (let i = 0; i < slots; i++) {
+        let angle = round(Vector(0, angleA, 0).add(Vector(0, (360 / 18) * (i + 1), 0)).y, 0);
 
-          if (angle < 0) {
-            angle += 360;
-          }
-
-          results.push({
-            angle,
-            left,
-            right,
-          });
+        if (angle < 0) {
+          angle += 360;
         }
 
-        return results;
-      })
+        results.push({
+          angle,
+          left,
+          right,
+        });
+      }
+
+      return results;
+    });
+
+    await waitFrames(15);
+
+    const gaps2 = gaps
+      .flat()
+      .sort((a, b) => a.angle - b.angle)
       .reduce<Record<number, Partial<Connection>>>((acc, item) => {
         acc[item.angle] = item;
         return acc;
       }, {});
+
+    await waitFrames(15);
 
     const allSlots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 10, 18, 0)
       .flatMap((position) => {
@@ -466,137 +473,57 @@ export const phase: Phase = {
           angle += 360;
         }
 
-        const item = gaps[angle];
+        const item = gaps2[angle];
 
         if (!item || item === undefined || item === null) {
           return [];
         }
 
-        log({ item });
         return [
           {
             ...item,
             position,
             angle,
           },
-        ] as Connection[];
+        ] as Required<Connection>[];
       })
       .filter((item) => item.left || item.right)
+      .sort((a, b) => a.angle - b.angle)
       .map((item, index) => ({ ...item, index }));
 
-    log(JSON.encode(allSlots));
-
-    log("GAPS");
-    log({ gaps: Object.keys(gaps) });
-    log("SLOTS");
-    log({ slots: allSlots.map((s) => s.angle) });
-
     const assigned = assignFactions(allSlots);
-    log(JSON.encode(assigned));
 
     if (!assigned) {
       return;
     }
 
-    // const assignedSlots = Object.entries(assigned).reduce<Record<number, string>>((acc, [id, info]) => {
-    //   if (info) {
-    //     let angle = round(gaps[info.dataIndex].angle + (360 / 18) * (info.slotIndex + 1), 0);
-    //     log({ id, info, angle });
-
-    //     acc[angle] = id;
-    //   }
-
-    //   return acc;
-    // }, {});
-
-    // log({ assignedSlots, assigned });
-
-    // await Promise.all(
-    //   allSlots.map(async (slot) => {
-    //     let key = null;
-    //     if (gaps[assigned.bank.index].angle === slot.angle) {
-    //       //
-    //       key = "bank";
-    //     }
-
-    //     if (gaps[assigned.treachery.index].angle === slot.angle) {
-    //       //
-    //       key = "treachery";
-    //     }
-
-    //     if (gaps[assigned.tleilaxuTanks.index].angle === slot.angle) {
-    //       //
-    //       key = "tleilaxuTanks";
-    //     }
-
-    //     if (gaps[assigned.events.index].angle === slot.angle) {
-    //       //
-    //       key = "events";
-    //     }
-
-    //     const item = key;
-    //     if (item) {
-    //       await Forge.spawnObject(
-    //         {
-    //           ...simple({ name: item }),
-    //           Locked: true,
-    //           Tooltip: true,
-    //           ColorDiffuse: {
-    //             r: 32 / 255,
-    //             g: 29 / 255,
-    //             b: 29 / 255,
-    //             a: 1,
-    //           },
-    //         },
-    //         {
-    //           position: slot.position.setAt("y", 1.22),
-    //           rotation: Vector(0, slot.angle, 0),
-    //           scale: Vector(2.0, 2.0, 2.0),
-    //         }
-    //       ).then((t) => (t.interactable = true));
-    //     } else {
-    //       log({ angle: slot.angle });
-    //     }
-
-    //     return;
-    //   })
-    // );
-
-    await Promise.all(
-      Object.entries(assigned).map(async ([id, info]) => {
-        if (!info) {
-          log({ id, info });
-          return;
-        }
-
-        const { position, angle } = info;
-        if (!position || !angle) {
-          log({ id, info });
-          return;
-        }
-
-        await Forge.spawnObject(
-          {
-            ...simple({ name: id }),
-            Locked: true,
-            Tooltip: true,
-            ColorDiffuse: {
-              r: 32 / 255,
-              g: 29 / 255,
-              b: 29 / 255,
-              a: 1,
-            },
+    await Object.entries(assigned).reduce(async (acc, [item, slot]) => {
+      await acc;
+      if (slot.angle) {
+        const options = {
+          position: Vector(slot.position.x, 1.22, slot.position.z),
+          rotation: Vector(0, slot.angle, 0),
+          scale: Vector(2.0, 2.0, 2.0),
+        };
+        const obj = {
+          ...simple({ name: item }),
+          Locked: true,
+          Tooltip: true,
+          ColorDiffuse: {
+            r: 32 / 255,
+            g: 29 / 255,
+            b: 29 / 255,
+            a: 1,
           },
-          {
-            position: position.setAt("y", 1.22),
-            rotation: Vector(0, angle, 0),
-            scale: Vector(2.0, 2.0, 2.0),
-          }
-        ).then((t) => (t.interactable = true));
+        };
+        await Forge.spawnObject(obj, options);
+      } else {
+      }
 
-        return;
-      })
-    );
+      return;
+    }, Promise.resolve());
+
+    log("done???");
 
     broadcastToAll("Player assets spawned!");
 
