@@ -9,7 +9,7 @@ import { getSlottedRingPositions } from "../../utils/circle";
 import { round } from "../../utils/math";
 import { defineFog } from "../../objects/fog";
 import { matchColorsToFactions } from "../../utils/color";
-import { relativeTo } from "../../utils/relative";
+import { getAngleBetweenVectors, relativeTo } from "../../utils/relative";
 import { define, simple } from "../../objects/disc";
 import { defineAlliance } from "../../objects/alliance";
 import { formatFactionName } from "../../utils/format";
@@ -18,10 +18,40 @@ import { assignFactions, Connection } from "../../utils/slots";
 
 const name = "spawn";
 
+const normalizeAngle = (angle: number): number => {
+  while (angle < 0) {
+    angle += 360;
+  }
+  while (angle >= 360) {
+    angle -= 360;
+  }
+  return angle;
+};
+
 export const phase: Phase = {
   name,
   enterForwards: async (s, api) => {
     broadcastToAll("Spawning board...");
+
+    const tokens = getObjectsWithAllTags(["faction_token"]);
+    tokens.forEach((token) => {
+      token.setLock(false);
+    });
+
+    const center = Vector(0, 0, 0);
+    const handZoneRotations = getSlottedRingPositions(Vector(0, 3.19, 0), 17, tokens.length, 0)
+      .map((position) => ({
+        position,
+        angle: round(getAngleBetweenVectors(Vector(0, 0, 0), position)),
+      }))
+      .sort((a, b) => a.angle - b.angle);
+
+    const sortedTokens = tokens.sort((a, b) => {
+      const ra = round(getAngleBetweenVectors(Vector(0, 0, 0), a.getPosition()));
+      const rb = round(getAngleBetweenVectors(Vector(0, 0, 0), b.getPosition()));
+
+      return ra - rb;
+    });
 
     const all = defineTerritories();
 
@@ -112,6 +142,85 @@ export const phase: Phase = {
     for (const piece of pieces) {
       piece.setColorTint(Color(1, 1, 1));
     }
+
+    const calculateGaps = (tokens: any[]): Record<number, Partial<Connection>> => {
+      return tokens
+        .flatMap((token, index, arr) => {
+          let angleA = getAngleBetweenVectors(token.getPosition(), center);
+          angleA = normalizeAngle(angleA);
+
+          let angleB = getAngleBetweenVectors(arr[(index + 1) % arr.length].getPosition(), center);
+          angleB = normalizeAngle(angleB);
+
+          let size = round(angleB - angleA, 0);
+          size = normalizeAngle(size);
+
+          const slots = round(size / (360 / 18), 0) - 1;
+
+          return Array.from({ length: slots }, (_, i) => {
+            let angle = round(Vector(0, angleA, 0).add(Vector(0, (360 / 18) * (i + 1), 0)).y, 0);
+            angle = normalizeAngle(angle);
+
+            return {
+              angle,
+              left: token.getGMNotes(),
+              right: arr[(index + 1) % arr.length].getGMNotes(),
+            };
+          });
+        })
+        .sort((a, b) => a.angle - b.angle)
+        .reduce<Record<number, Partial<Connection>>>((acc, item) => {
+          acc[item.angle] = item;
+          return acc;
+        }, {});
+    };
+
+    const gaps = calculateGaps(sortedTokens);
+
+    const slots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 9, 18, 0)
+      .flatMap((position) => {
+        let angle = round(getAngleBetweenVectors(position, center), 0);
+        angle = normalizeAngle(angle);
+
+        const item = gaps[angle];
+        if (!item) return [];
+
+        return [
+          {
+            ...item,
+            position,
+            angle,
+          },
+        ] as Required<Connection>[];
+      })
+      .filter((item) => item.left || item.right)
+      .sort((a, b) => a.angle - b.angle)
+      .map((item, index) => ({ ...item, index }));
+
+    const assigned = assignFactions(slots);
+
+    if (!assigned) return;
+
+    await Object.entries(assigned).reduce(async (acc, [item, slot]) => {
+      await acc;
+      if (slot.angle) {
+        await Forge.spawnObject(
+          {
+            ...simple({ name: item }),
+            Locked: true,
+            Tooltip: true,
+            ColorDiffuse: { r: 32 / 255, g: 29 / 255, b: 29 / 255, a: 1 },
+          },
+          {
+            position: Vector(slot.position.x, 1.11, slot.position.z),
+            rotation: Vector(0, slot.angle, 0),
+            scale: Vector(1.5, 9, 1.5),
+          }
+        );
+        await waitFrames(2);
+      }
+      return;
+    }, Promise.resolve());
 
     interface Location {
       name: string;
@@ -216,11 +325,6 @@ export const phase: Phase = {
       // await waitFrames(1);
     }
 
-    const tokens = getObjectsWithAllTags(["faction_token"]);
-    tokens.forEach((token) => {
-      token.setLock(false);
-    });
-
     const orniDecal = defineOrnithopter();
     const cityDecal = defineCity();
     const sietchDecal = defineSietch();
@@ -265,28 +369,6 @@ export const phase: Phase = {
     // }
     // textObj.UI.show("root");
     // await waitTime(0.2);
-
-    function getAngleBetweenVectors(v1: Vector, v2: Vector): number {
-      const deltaX = v2.x - v1.x;
-      const deltaZ = v2.z - v1.z;
-      const angleRadians = Math.atan2(deltaZ, deltaX);
-      const angleDegrees = angleRadians * (180 / Math.PI);
-      return -90 - angleDegrees;
-    }
-
-    const handZoneRotations = getSlottedRingPositions(Vector(0, 3.19, 0), 17, tokens.length, 0)
-      .map((position) => ({
-        position,
-        angle: round(getAngleBetweenVectors(Vector(0, 0, 0), position)),
-      }))
-      .sort((a, b) => a.angle - b.angle);
-
-    const sortedTokens = tokens.sort((a, b) => {
-      const ra = round(getAngleBetweenVectors(Vector(0, 0, 0), a.getPosition()));
-      const rb = round(getAngleBetweenVectors(Vector(0, 0, 0), b.getPosition()));
-
-      return ra - rb;
-    });
 
     // shields
     for (let i = 0; i < sortedTokens.length; i++) {
@@ -413,96 +495,6 @@ export const phase: Phase = {
         return;
       })
     );
-
-    const center = Vector(0, 0, 0);
-
-    const normalizeAngle = (angle: number): number => {
-      while (angle < 0) {
-        angle += 360;
-      }
-      while (angle >= 360) {
-        angle -= 360;
-      }
-      return angle;
-    };
-
-    const calculateGaps = (tokens: any[]): Record<number, Partial<Connection>> => {
-      return tokens
-        .flatMap((token, index, arr) => {
-          let angleA = getAngleBetweenVectors(token.getPosition(), center);
-          angleA = normalizeAngle(angleA);
-
-          let angleB = getAngleBetweenVectors(arr[(index + 1) % arr.length].getPosition(), center);
-          angleB = normalizeAngle(angleB);
-
-          let size = round(angleB - angleA, 0);
-          size = normalizeAngle(size);
-
-          const slots = round(size / (360 / 18), 0) - 1;
-
-          return Array.from({ length: slots }, (_, i) => {
-            let angle = round(Vector(0, angleA, 0).add(Vector(0, (360 / 18) * (i + 1), 0)).y, 0);
-            angle = normalizeAngle(angle);
-
-            return {
-              angle,
-              left: token.getGMNotes(),
-              right: arr[(index + 1) % arr.length].getGMNotes(),
-            };
-          });
-        })
-        .sort((a, b) => a.angle - b.angle)
-        .reduce<Record<number, Partial<Connection>>>((acc, item) => {
-          acc[item.angle] = item;
-          return acc;
-        }, {});
-    };
-
-    const gaps = calculateGaps(sortedTokens);
-
-    const slots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 9, 18, 0)
-      .flatMap((position) => {
-        let angle = round(getAngleBetweenVectors(position, center), 0);
-        angle = normalizeAngle(angle);
-
-        const item = gaps[angle];
-        if (!item) return [];
-
-        return [
-          {
-            ...item,
-            position,
-            angle,
-          },
-        ] as Required<Connection>[];
-      })
-      .filter((item) => item.left || item.right)
-      .sort((a, b) => a.angle - b.angle)
-      .map((item, index) => ({ ...item, index }));
-
-    const assigned = assignFactions(slots);
-
-    if (!assigned) return;
-
-    await Object.entries(assigned).reduce(async (acc, [item, slot]) => {
-      await acc;
-      if (slot.angle) {
-        await Forge.spawnObject(
-          {
-            ...simple({ name: item }),
-            Locked: true,
-            Tooltip: true,
-            ColorDiffuse: { r: 32 / 255, g: 29 / 255, b: 29 / 255, a: 1 },
-          },
-          {
-            position: Vector(slot.position.x, 1.11, slot.position.z),
-            rotation: Vector(0, slot.angle, 0),
-            scale: Vector(1.5, 9, 1.5),
-          }
-        );
-      }
-      return;
-    }, Promise.resolve());
 
     broadcastToAll("Player assets spawned!");
 

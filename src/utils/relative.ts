@@ -53,3 +53,11 @@ export const relativeTo = (base: [Vector, Vector], offset: [Vector, Vector]): Ob
   const [position, rotation] = relative(base, offset);
   return { position, rotation };
 };
+
+export function getAngleBetweenVectors(v1: Vector, v2: Vector): number {
+  const deltaX = v2.x - v1.x;
+  const deltaZ = v2.z - v1.z;
+  const angleRadians = Math.atan2(deltaZ, deltaX);
+  const angleDegrees = angleRadians * (180 / Math.PI);
+  return -90 - angleDegrees;
+}
