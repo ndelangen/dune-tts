@@ -90,12 +90,13 @@ export const phase: Phase = {
     while (Time.time - startTime <= 1) {
       const t = 1 - Math.pow(1 - (Time.time - startTime) / 1, 1);
 
-      borderObj.setPosition(Vector.lerp(Vector(0, 0, 0), Vector(0, 1.62, 0), t));
+      borderObj.setPosition(Vector.lerp(Vector(0, 0, 0), Vector(0, 1.11, 0), t));
       borderObj.setScale(Vector.lerp(Vector(5.1, 9, 5.1), Vector(7.3, 9.0, 7.3), t));
       borderObj.setColorTint(Color(current.r, current.g, current.b, t));
       await waitFrames(1);
     }
 
+    borderObj.setPosition(Vector(0, 1.11, 0));
     borderObj.setScale(Vector(7.3, 9.0, 7.3));
     borderObj.setColorTint(Color(current.r, current.g, current.b, 1));
 
@@ -118,7 +119,7 @@ export const phase: Phase = {
       rotation?: Vector;
     }
 
-    const y = 1.69;
+    const y = 1.21;
     const territoryNames: Location[] = [
       //
       { name: "Polar Sink", position: Vector(-0.12, y, -0.13) },
@@ -513,9 +514,9 @@ export const phase: Phase = {
             ColorDiffuse: { r: 32 / 255, g: 29 / 255, b: 29 / 255, a: 1 },
           },
           {
-            position: Vector(slot.position.x, 1.22, slot.position.z),
+            position: Vector(slot.position.x, 1.11, slot.position.z),
             rotation: Vector(0, slot.angle, 0),
-            scale: Vector(1.5, 1.5, 1.5),
+            scale: Vector(1.5, 9, 1.5),
           }
         );
       }

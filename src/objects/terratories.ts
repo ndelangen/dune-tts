@@ -12,7 +12,7 @@ function defineTerritory({ mesh, image, collider, name, description }: Territory
     Name: "Custom_Model",
     Transform: {
       posX: 0.0,
-      posY: 1.8,
+      posY: 1.32,
       posZ: 0.0,
       rotX: 0.0,
       rotY: 180.0,
