@@ -415,67 +415,72 @@ export const phase: Phase = {
 
     const center = Vector(0, 0, 0);
 
-    const gaps = sortedTokens.map((token, index, arr) => {
-      const itemA = token;
-      let angleA = getAngleBetweenVectors(itemA.getPosition(), center);
-      if (angleA < 0) {
-        angleA += 360;
-      }
-      const itemB = arr[(index + 1) % arr.length];
-      let angleB = getAngleBetweenVectors(itemB.getPosition(), center);
-      if (angleB < 0) {
-        angleB += 360;
-      }
+    const calculateGaps = (tokens: any[]) => {
+      return tokens
+        .flatMap((token, index, arr) => {
+          let angleA = getAngleBetweenVectors(token.getPosition(), center);
+          if (angleA < 0) {
+            angleA += 360;
+          }
+          if (angleA >= 360) {
+            angleA -= 360;
+          }
 
-      const left = itemA.getGMNotes();
-      const right = itemB.getGMNotes();
-      let size = round(angleB - angleA, 0);
-      if (size < 0) {
-        size += 360;
-      }
-      const slots = round(size / (360 / 18), 0) - 1;
+          let angleB = getAngleBetweenVectors(arr[(index + 1) % arr.length].getPosition(), center);
+          if (angleB < 0) {
+            angleB += 360;
+          }
+          if (angleB >= 360) {
+            angleB -= 360;
+          }
 
-      const results = [];
+          let size = round(angleB - angleA, 0);
+          if (size < 0) {
+            size += 360;
+          }
+          if (size >= 360) {
+            size -= 360;
+          }
 
-      for (let i = 0; i < slots; i++) {
-        let angle = round(Vector(0, angleA, 0).add(Vector(0, (360 / 18) * (i + 1), 0)).y, 0);
+          const slots = round(size / (360 / 18), 0) - 1;
 
-        if (angle < 0) {
-          angle += 360;
-        }
+          return Array.from({ length: slots }, (_, i) => {
+            let angle = round(Vector(0, angleA, 0).add(Vector(0, (360 / 18) * (i + 1), 0)).y, 0);
+            if (angle < 0) {
+              angle += 360;
+            }
+            if (angle >= 360) {
+              angle -= 360;
+            }
 
-        results.push({
-          angle,
-          left,
-          right,
-        });
-      }
+            return {
+              angle,
+              left: token.getGMNotes(),
+              right: arr[(index + 1) % arr.length].getGMNotes(),
+            };
+          });
+        })
+        .sort((a, b) => a.angle - b.angle)
+        .reduce<Record<number, Partial<Connection>>>((acc, item) => {
+          acc[item.angle] = item;
+          return acc;
+        }, {});
+    };
 
-      return results;
-    });
+    const gaps = calculateGaps(sortedTokens);
 
-    await waitFrames(15);
-
-    const gaps2 = gaps
-      .flat()
-      .sort((a, b) => a.angle - b.angle)
-      .reduce<Record<number, Partial<Connection>>>((acc, item) => {
-        acc[item.angle] = item;
-        return acc;
-      }, {});
-
-    await waitFrames(15);
-
-    const allSlots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 10, 18, 0)
+    const slots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 9, 18, 0)
       .flatMap((position) => {
         let angle = round(getAngleBetweenVectors(position, center), 0);
         if (angle < 0) {
           angle += 360;
         }
+        if (angle >= 360) {
+          angle -= 360;
+        }
 
-        const item = gaps2[angle];
-
-        if (!item || item === undefined || item === null) {
+        const item = gaps[angle];
+        if (!item) {
           return [];
         }
 
@@ -491,7 +496,7 @@ export const phase: Phase = {
       .sort((a, b) => a.angle - b.angle)
       .map((item, index) => ({ ...item, index }));
 
-    const assigned = assignFactions(allSlots);
+    const assigned = assignFactions(slots);
 
     if (!assigned) {
       return;
@@ -500,30 +505,22 @@ export const phase: Phase = {
     await Object.entries(assigned).reduce(async (acc, [item, slot]) => {
       await acc;
       if (slot.angle) {
-        const options = {
-          position: Vector(slot.position.x, 1.22, slot.position.z),
-          rotation: Vector(0, slot.angle, 0),
-          scale: Vector(2.0, 2.0, 2.0),
-        };
-        const obj = {
-          ...simple({ name: item }),
-          Locked: true,
-          Tooltip: true,
-          ColorDiffuse: {
-            r: 32 / 255,
-            g: 29 / 255,
-            b: 29 / 255,
-            a: 1,
+        await Forge.spawnObject(
+          {
+            ...simple({ name: item }),
+            Locked: true,
+            Tooltip: true,
+            ColorDiffuse: { r: 32 / 255, g: 29 / 255, b: 29 / 255, a: 1 },
           },
-        };
-        await Forge.spawnObject(obj, options);
-      } else {
+          {
+            position: Vector(slot.position.x, 1.22, slot.position.z),
+            rotation: Vector(0, slot.angle, 0),
+            scale: Vector(1.5, 1.5, 1.5),
+          }
+        );
       }
-
       return;
     }, Promise.resolve());
-
-    log("done???");
 
     broadcastToAll("Player assets spawned!");
 

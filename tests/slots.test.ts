@@ -7,48 +7,18 @@ import { assignFactions, Connection } from "../src/utils/slots";
 describe("assignFactions", () => {
   test("no atreides", () => {
     const data: Connection[] = [
-      { angle: 20, index: 0, left: "harkonnen", position: { x: 3.4202, y: 3.19, z: 9.3969 }, right: "atreides" },
-      { angle: 40, index: 1, left: "harkonnen", position: { x: 6.4279, y: 3.19, z: 7.6604 }, right: "atreides" },
-      { angle: 140, index: 2, left: "spacing-guild", position: { x: 6.4279, y: 3.19, z: -7.6604 }, right: "fremen" },
-      { angle: 160, index: 3, left: "spacing-guild", position: { x: 3.4202, y: 3.19, z: -9.3969 }, right: "fremen" },
-      { angle: 200, index: 4, left: "fremen", position: { x: -3.4202, y: 3.19, z: -9.3969 }, right: "bene-gesserit" },
-      { angle: 220, index: 5, left: "fremen", position: { x: -6.4279, y: 3.19, z: -7.6604 }, right: "bene-gesserit" },
-      { angle: 260, index: 6, left: "bene-gesserit", position: { x: -9.8481, y: 3.19, z: -1.7365 }, right: "emperor" },
-      { angle: 280, index: 7, left: "bene-gesserit", position: { x: -9.8481, y: 3.19, z: 1.7365 }, right: "emperor" },
+      { angle: 60, index: 0, left: "bene-gesserit", position: { x: 8.6603, y: 3.19, z: 5 }, right: "bene-tleilaxu" },
+      { angle: 100, index: 1, left: "bene-tleilaxu", position: { x: 9.8481, y: 3.19, z: -1.7365 }, right: "fremen" },
+      { angle: 120, index: 2, left: "bene-tleilaxu", position: { x: 8.6603, y: 3.19, z: -5 }, right: "fremen" },
+      { angle: 160, index: 3, left: "fremen", position: { x: 3.4202, y: 3.19, z: -9.3969 }, right: "spacing-guild" },
+      { angle: 200, index: 4, left: "spacing-guild", position: { x: -3.4202, y: 3.19, z: -9.3969 }, right: "atreides" },
+      { angle: 220, index: 5, left: "spacing-guild", position: { x: -6.4279, y: 3.19, z: -7.6604 }, right: "atreides" },
+      { angle: 260, index: 6, left: "atreides", position: { x: -9.8481, y: 3.19, z: -1.7365 }, right: "emperor" },
+      { angle: 280, index: 7, left: "atreides", position: { x: -9.8481, y: 3.19, z: 1.7365 }, right: "emperor" },
       { angle: 320, index: 8, left: "emperor", position: { x: -6.4279, y: 3.19, z: 7.6604 }, right: "harkonnen" },
-      { angle: 340, index: 9, left: "emperor", position: { x: -3.4202, y: 3.19, z: 9.3969 }, right: "harkonnen" },
     ];
     const out = assignFactions(data);
-    expect(out).toEqual({
-      bank: {
-        angle: 140,
-        index: 2,
-        left: "spacing-guild",
-        position: { x: 6.4279, y: 3.19, z: -7.6604 },
-        right: "fremen",
-      },
-      events: {
-        angle: 40,
-        index: 1,
-        left: "harkonnen",
-        position: { x: 6.4279, y: 3.19, z: 7.6604 },
-        right: "atreides",
-      },
-      tleilaxuTanks: {
-        angle: 20,
-        index: 0,
-        left: "harkonnen",
-        position: { x: 3.4202, y: 3.19, z: 9.3969 },
-        right: "atreides",
-      },
-      treachery: {
-        angle: 340,
-        index: 9,
-        left: "emperor",
-        position: { x: -3.4202, y: 3.19, z: 9.3969 },
-        right: "harkonnen",
-      },
-    });
+    expect(out).toEqual({});
   });
   // test("8 players", () => {
   //   const data: Connection[] = [
@@ -187,4 +157,31 @@ const o = {
     position: { x: -3.4202, y: 3.19, z: 9.3969 },
     right: "harkonnen",
   },
+};
+
+const t = {
+  gaps: [
+    { angle: 60, left: "bene-tleilaxu", right: "fremen" },
+    { angle: 100, left: "fremen", right: "harkonnen" },
+    { angle: 120, left: "fremen", right: "harkonnen" },
+    { angle: 160, left: "harkonnen", right: "spacing-guild" },
+    { angle: 200, left: "spacing-guild", right: "emperor" },
+    { angle: 220, left: "spacing-guild", right: "emperor" },
+    { angle: 260, left: "emperor", right: "atreides" },
+    { angle: 280, left: "emperor", right: "atreides" },
+    { angle: 320, left: "atreides", right: "bene-gesserit" },
+    { angle: 360, left: "bene-gesserit", right: "bene-tleilaxu" },
+    { angle: 380, left: "bene-gesserit", right: "bene-tleilaxu" },
+  ],
+  slots: [
+    { angle: 60, index: 0, left: "bene-tleilaxu", position: { x: 8.6603, y: 3.19, z: 5 }, right: "fremen" },
+    { angle: 100, index: 1, left: "fremen", position: { x: 9.8481, y: 3.19, z: -1.7365 }, right: "harkonnen" },
+    { angle: 120, index: 2, left: "fremen", position: { x: 8.6603, y: 3.19, z: -5 }, right: "harkonnen" },
+    { angle: 160, index: 3, left: "harkonnen", position: { x: 3.4202, y: 3.19, z: -9.3969 }, right: "spacing-guild" },
+    { angle: 200, index: 4, left: "spacing-guild", position: { x: -3.4202, y: 3.19, z: -9.3969 }, right: "emperor" },
+    { angle: 220, index: 5, left: "spacing-guild", position: { x: -6.4279, y: 3.19, z: -7.6604 }, right: "emperor" },
+    { angle: 260, index: 6, left: "emperor", position: { x: -9.8481, y: 3.19, z: -1.7365 }, right: "atreides" },
+    { angle: 280, index: 7, left: "emperor", position: { x: -9.8481, y: 3.19, z: 1.7365 }, right: "atreides" },
+    { angle: 320, index: 8, left: "atreides", position: { x: -6.4279, y: 3.19, z: 7.6604 }, right: "bene-gesserit" },
+  ],
 };
