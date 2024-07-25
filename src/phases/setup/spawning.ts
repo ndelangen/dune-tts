@@ -416,43 +416,33 @@ export const phase: Phase = {
 
     const center = Vector(0, 0, 0);
 
-    const calculateGaps = (tokens: any[]) => {
+    const normalizeAngle = (angle: number): number => {
+      while (angle < 0) {
+        angle += 360;
+      }
+      while (angle >= 360) {
+        angle -= 360;
+      }
+      return angle;
+    };
+
+    const calculateGaps = (tokens: any[]): Record<number, Partial<Connection>> => {
       return tokens
         .flatMap((token, index, arr) => {
           let angleA = getAngleBetweenVectors(token.getPosition(), center);
-          if (angleA < 0) {
-            angleA += 360;
-          }
-          if (angleA >= 360) {
-            angleA -= 360;
-          }
+          angleA = normalizeAngle(angleA);
 
           let angleB = getAngleBetweenVectors(arr[(index + 1) % arr.length].getPosition(), center);
-          if (angleB < 0) {
-            angleB += 360;
-          }
-          if (angleB >= 360) {
-            angleB -= 360;
-          }
+          angleB = normalizeAngle(angleB);
 
           let size = round(angleB - angleA, 0);
-          if (size < 0) {
-            size += 360;
-          }
-          if (size >= 360) {
-            size -= 360;
-          }
+          size = normalizeAngle(size);
 
           const slots = round(size / (360 / 18), 0) - 1;
 
           return Array.from({ length: slots }, (_, i) => {
             let angle = round(Vector(0, angleA, 0).add(Vector(0, (360 / 18) * (i + 1), 0)).y, 0);
-            if (angle < 0) {
-              angle += 360;
-            }
-            if (angle >= 360) {
-              angle -= 360;
-            }
+            angle = normalizeAngle(angle);
 
             return {
               angle,
@@ -473,17 +463,10 @@ export const phase: Phase = {
     const slots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 9, 18, 0)
       .flatMap((position) => {
         let angle = round(getAngleBetweenVectors(position, center), 0);
-        if (angle < 0) {
-          angle += 360;
-        }
-        if (angle >= 360) {
-          angle -= 360;
-        }
+        angle = normalizeAngle(angle);
 
         const item = gaps[angle];
-        if (!item) {
-          return [];
-        }
+        if (!item) return [];
 
         return [
           {
@@ -499,9 +482,7 @@ export const phase: Phase = {
 
     const assigned = assignFactions(slots);
 
-    if (!assigned) {
-      return;
-    }
+    if (!assigned) return;
 
     await Object.entries(assigned).reduce(async (acc, [item, slot]) => {
       await acc;
