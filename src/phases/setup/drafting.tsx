@@ -107,7 +107,7 @@ async function setup(s: State, api: Api) {
       }
 
       if (newMessages.length === 0) {
-        newMessages = ["No players have drafted"];
+        newMessages = ["Flip faction to draft", "No players have drafted"];
       }
 
       if (newMessages.join("\n") !== messages) {
