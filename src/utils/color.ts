@@ -34,3 +34,10 @@ export function matchColorsToFactions(input: [string, Faction["colors"]][]): Rec
 
   return acc;
 }
+
+export const MyColors = {
+  black: { r: 0, g: 0, b: 0, a: 1 },
+  dark: { r: 32 / 255, g: 29 / 255, b: 29 / 255, a: 1 },
+  muted: { r: 183 / 255, g: 178 / 255, b: 144 / 255, a: 1 },
+  detail: { r: 255 / 255, g: 255 / 255, b: 255 / 255, a: 1 },
+};

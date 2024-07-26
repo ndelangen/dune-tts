@@ -56,7 +56,8 @@ export const defineAlliance = (input: AllianceInput) => ({
     MeshURL: "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
     DiffuseURL: BASEURL + input.base,
     NormalURL: "",
-    ColliderURL: "",
+    ColliderURL:
+      "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
     Convex: true,
     MaterialIndex: 3,
     TypeIndex: 5,

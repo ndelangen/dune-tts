@@ -63,7 +63,8 @@ function defineDisc(input: DiscInput) {
       MeshURL: "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
       DiffuseURL: BASEURL + input.front,
       NormalURL: "",
-      ColliderURL: "",
+      ColliderURL:
+        "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
       Convex: true,
       MaterialIndex: 3,
       TypeIndex: 5,
@@ -203,7 +204,8 @@ function defineStack(input: DiscInput) {
       MeshURL: "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
       DiffuseURL: BASEURL + input.front,
       NormalURL: "",
-      ColliderURL: "",
+      ColliderURL:
+        "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
       Convex: true,
       MaterialIndex: 3,
       TypeIndex: 5,
@@ -269,7 +271,8 @@ function defineStack(input: DiscInput) {
             "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
           DiffuseURL: BASEURL + input.back,
           NormalURL: "",
-          ColliderURL: "",
+          ColliderURL:
+            "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
           Convex: true,
           MaterialIndex: 3,
           TypeIndex: 5,
@@ -345,7 +348,8 @@ export function simple(input: SimpleInput) {
       MeshURL: "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
       DiffuseURL: "",
       NormalURL: "",
-      ColliderURL: "",
+      ColliderURL:
+        "http://cloud-3.steamusercontent.com/ugc/2501267533360112638/BFB4323CF70501F6D36FFA354DD71110506454CA/",
       Convex: true,
       MaterialIndex: 3,
       TypeIndex: 5,

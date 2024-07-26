@@ -54,7 +54,8 @@ export const defineLine = (input: LineInput) => ({
       "https://steamusercontent-a.akamaihd.net/ugc/2521536445239935304/25393B20736BADF5E8618AB27E6F897703AC0FF5/",
     DiffuseURL: input.url ? BASEURL + input.url : "",
     NormalURL: "",
-    ColliderURL: "",
+    ColliderURL:
+      "https://steamusercontent-a.akamaihd.net/ugc/2521536445239935304/25393B20736BADF5E8618AB27E6F897703AC0FF5/",
     Convex: true,
     MaterialIndex: 3,
     TypeIndex: 0,

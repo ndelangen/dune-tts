@@ -5,10 +5,10 @@ import { defineBorder } from "../../objects/border";
 import { defineText } from "../../objects/text";
 import { defineCity, defineOrnithopter, defineSietch } from "../../objects/decals";
 import { defineShield } from "../../objects/shield";
-import { getSlottedRingPositions } from "../../utils/circle";
+import { getArchPositions, getSlottedRingPositions } from "../../utils/circle";
 import { round } from "../../utils/math";
 import { defineFog } from "../../objects/fog";
-import { matchColorsToFactions } from "../../utils/color";
+import { matchColorsToFactions, MyColors } from "../../utils/color";
 import { getAngleBetweenVectors, relativeTo } from "../../utils/relative";
 import { define, simple } from "../../objects/disc";
 import { defineAlliance } from "../../objects/alliance";
@@ -34,9 +34,6 @@ export const phase: Phase = {
     broadcastToAll("Spawning board...");
 
     const tokens = getObjectsWithAllTags(["faction_token"]);
-    tokens.forEach((token) => {
-      token.setLock(false);
-    });
 
     const center = Vector(0, 0, 0);
     const handZoneRotations = getSlottedRingPositions(Vector(0, 3.19, 0), 17, tokens.length, 0)
@@ -177,7 +174,7 @@ export const phase: Phase = {
 
     const gaps = calculateGaps(sortedTokens);
 
-    const slots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 9, 18, 0)
+    const slots: Connection[] = getSlottedRingPositions(Vector(0, 3.19, 0), 9.5, 18, 0)
       .flatMap((position) => {
         let angle = round(getAngleBetweenVectors(position, center), 0);
         angle = normalizeAngle(angle);
@@ -209,16 +206,55 @@ export const phase: Phase = {
             ...simple({ name: item }),
             Locked: true,
             Tooltip: true,
-            ColorDiffuse: { r: 32 / 255, g: 29 / 255, b: 29 / 255, a: 1 },
+            ColorDiffuse: MyColors.dark,
           },
           {
             position: Vector(slot.position.x, 1.11, slot.position.z),
             rotation: Vector(0, slot.angle, 0),
-            scale: Vector(1.5, 9, 1.5),
+            scale: Vector(1.55, 9, 1.55),
           }
         );
         await waitFrames(2);
       }
+      return;
+    }, Promise.resolve());
+
+    const arch = getArchPositions(center, 7.4, 5.5, 9, 90, true);
+
+    await arch.reduce(async (acc, position, index) => {
+      await acc;
+      await Forge.spawnObject(
+        {
+          ...simple({ name: index.toString() }),
+          Locked: true,
+          Tooltip: true,
+          ColorDiffuse: MyColors.dark,
+        },
+        {
+          position: Vector(position.x, 1.12, position.z),
+          rotation: Vector(0, 0, 0),
+          scale: Vector(0.4, 9, 0.4),
+        }
+      );
+      await waitFrames(2);
+      return;
+    }, Promise.resolve());
+    await arch.reduce(async (acc, position, index) => {
+      await acc;
+      await Forge.spawnObject(
+        {
+          ...simple({ name: index.toString() }),
+          Locked: true,
+          Tooltip: true,
+          ColorDiffuse: MyColors.muted,
+        },
+        {
+          position: Vector(position.x, 1.125, position.z),
+          rotation: Vector(0, 0, 0),
+          scale: Vector(0.35, 9, 0.35),
+        }
+      );
+      await waitFrames(2);
       return;
     }, Promise.resolve());
 
@@ -497,6 +533,12 @@ export const phase: Phase = {
     );
 
     broadcastToAll("Player assets spawned!");
+
+    tokens.forEach((token) => {
+      token.setPosition(token.getPosition().setAt("y", 2));
+      token.setDescription("");
+      token.setLock(false);
+    });
 
     return;
   },

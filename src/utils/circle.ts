@@ -47,8 +47,16 @@ export function getArchPositions(
 
   let startAngle = ((targetDegree - 180) * -1 * Math.PI) / 180;
 
+  if (startAngle < 0) {
+    startAngle += 360;
+  }
+
+  if (startAngle > 360) {
+    startAngle -= 360;
+  }
+
   if (centered) {
-    startAngle = startAngle - (angle * (count - 1)) / 2;
+    startAngle = startAngle + (angle * (count - 1)) / 2;
   }
 
   for (let i = count - 1; i >= 0; i--) {

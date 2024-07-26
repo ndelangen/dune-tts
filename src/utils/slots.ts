@@ -12,6 +12,9 @@ export const assignFactions = (data: Connection[]) => {
   const hasEmperor = data.find((connection) => connection.left === "emperor" || connection.right === "emperor");
   const hasFremen = data.find((connection) => connection.left === "fremen" || connection.right === "fremen");
   const hasIduali = data.find((connection) => connection.left === "iduali" || connection.right === "iduali");
+  const hasTleilaxu = data.find(
+    (connection) => connection.left === "bene-tleilax" || connection.right === "bene-tleilax"
+  );
   const hasSpacingGuild = data.find(
     (connection) => connection.left === "spacing-guild" || connection.right === "spacing-guild"
   );
@@ -42,57 +45,102 @@ export const assignFactions = (data: Connection[]) => {
     return null;
   }
 
-  // if (console) {
-  //   console.log(best.list);
-  // }
+  let bestTreachery: Connection | null = null;
+  let bestTleilaxuTanks: Connection | null = null;
+  let bestEvents: Connection | null = null;
+  let bestBank: Connection | null = null;
 
-  // let bestTreacheryIndex = best.list.findIndex((item) => item.left === preferred[0] || item.right === preferred[0]);
-  // let bestTreachery = best.list[bestTreacheryIndex];
-  // delete best.list[bestTreacheryIndex];
+  if (hasAtreides) {
+    const name = "atreides";
+    const item = best.list.find((item) => item.left === name || item.right === name);
+    if (item) {
+      bestTreachery = item;
+      best.list = best.list.filter((i) => i !== item);
+    }
+  }
 
-  // let bestTanksIndex = best.list.findIndex((item) => item?.left === preferred[1] || item?.right === preferred[1]);
-  // let bestTleilaxuTanks = best.list[bestTanksIndex];
-  // delete best.list[bestTanksIndex];
+  if (hasIx && !bestTreachery) {
+    const name = "atreides";
+    const item = best.list.find((item) => item.left === name || item.right === name);
+    if (item) {
+      bestTreachery = item;
+      best.list = best.list.filter((i) => i !== item);
+    }
+  }
 
-  // let bestEventsIndex = best.list.findIndex((item) => item?.left === preferred[2] || item?.right === preferred[2]);
-  // let bestEvents = best.list[bestEventsIndex];
-  // delete best.list[bestEventsIndex];
+  if (hasTleilaxu) {
+    const name = "bene-tleilaxu";
+    const item = best.list.find((item) => item.left === name || item.right === name);
+    if (item) {
+      bestTleilaxuTanks = item;
+      best.list = best.list.filter((i) => i !== item);
+    }
+  }
 
-  // let bestBankIndex = best.list.findIndex((item) => item?.left === preferred[3] || item?.right === preferred[3]);
-  // let bestBank = best.list[bestBankIndex];
-  // delete best.list[bestBankIndex];
+  if (hasFremen) {
+    const name = "fremen";
+    const item = best.list.find((item) => item.left === name || item.right === name);
+    if (item) {
+      bestEvents = item;
+      best.list = best.list.filter((i) => i !== item);
+    }
+  }
+  if (hasIduali && !bestEvents) {
+    const name = "iduali";
+    const item = best.list.find((item) => item.left === name || item.right === name);
+    if (item) {
+      bestEvents = item;
+      best.list = best.list.filter((i) => i !== item);
+    }
+  }
 
-  // if (isFalsy(bestTreachery)) {
-  //   const index = best.list.findIndex((item) => !!item);
-  //   bestTreachery = best.list[index];
-  //   delete best.list[index];
-  // }
-  // if (isFalsy(bestTleilaxuTanks)) {
-  //   const index = best.list.findIndex((item) => !!item);
-  //   bestTleilaxuTanks = best.list[index];
-  //   delete best.list[index];
-  // }
-  // if (isFalsy(bestEvents)) {
-  //   const index = best.list.findIndex((item) => !!item);
-  //   bestEvents = best.list[index];
-  //   delete best.list[index];
-  // }
-  // if (isFalsy(bestBank)) {
-  //   const index = best.list.findIndex((item) => !!item);
-  //   bestBank = best.list[index];
-  //   delete best.list[index];
-  // }
+  if (hasEmperor) {
+    const name = "emperor";
+    const item = best.list.find((item) => item.left === name || item.right === name);
+    if (item) {
+      bestBank = item;
+      best.list = best.list.filter((i) => i !== item);
+    }
+  }
+  if (hasSpacingGuild && !bestBank) {
+    const name = "spacing-guild";
+    const item = best.list.find((item) => item.left === name || item.right === name);
+    if (item) {
+      bestBank = item;
+      best.list = best.list.filter((i) => i !== item);
+    }
+  }
+
+  if (!bestTreachery) {
+    const item = best.list[0];
+    bestTreachery = item;
+    best.list = best.list.filter((i) => i !== item);
+  }
+
+  if (!bestTleilaxuTanks) {
+    const item = best.list[0];
+    bestTleilaxuTanks = item;
+    best.list = best.list.filter((i) => i !== item);
+  }
+
+  if (!bestEvents) {
+    const item = best.list[0];
+    bestEvents = item;
+    best.list = best.list.filter((i) => i !== item);
+  }
+
+  if (!bestBank) {
+    const item = best.list[0];
+    bestBank = item;
+    best.list = best.list.filter((i) => i !== item);
+  }
 
   const out = {
-    treachery: best.list[0],
-    tleilaxuTanks: best.list[1],
-    events: best.list[2],
-    bank: best.list[3],
+    treachery: bestTreachery,
+    tleilaxuTanks: bestTleilaxuTanks,
+    events: bestEvents,
+    bank: bestBank,
   };
-
-  // log({ out });
 
   return out;
 };
-
-const isFalsy = (value: any) => value === null || value === undefined || value === false || value === "";

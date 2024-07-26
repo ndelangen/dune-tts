@@ -1,13 +1,15 @@
+import { MyColors } from "../utils/color";
+
 export const defineBorder = () => ({
   GUID: "df54d2",
   Name: "Custom_Model",
   Transform: {
-    posX: -0.00000224492669,
+    posX: 0.0,
     posY: 1.62407672,
-    posZ: 0.00000425656663,
-    rotX: 0.000586546259,
-    rotY: 179.966537,
-    rotZ: 0.0003089086,
+    posZ: 0.0,
+    rotX: 0.0,
+    rotY: 180.0,
+    rotZ: 0.0,
     scaleX: 9.3,
     scaleY: 9.3,
     scaleZ: 9.3,
@@ -21,9 +23,7 @@ export const defineBorder = () => ({
     z: 0,
   },
   ColorDiffuse: {
-    r: 32 / 255,
-    g: 29 / 255,
-    b: 29 / 255,
+    ...MyColors.dark,
     a: 0,
   },
   LayoutGroupSortIndex: 0,
@@ -45,7 +45,8 @@ export const defineBorder = () => ({
       "https://steamusercontent-a.akamaihd.net/ugc/2501267533360144140/FB01B1FCBB1BBBDD61EDC0845E6BE0DCF7515FD8/",
     DiffuseURL: "",
     NormalURL: "",
-    ColliderURL: "",
+    ColliderURL:
+      "https://steamusercontent-a.akamaihd.net/ugc/2501267533360144140/FB01B1FCBB1BBBDD61EDC0845E6BE0DCF7515FD8/",
     Convex: true,
     MaterialIndex: 3,
     TypeIndex: 0,
