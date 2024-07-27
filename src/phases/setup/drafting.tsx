@@ -45,6 +45,9 @@ async function setup(s: State, api: Api) {
       ColorDiffuse: { r: 0.7, g: 0.7, b: 0.7 },
       LuaScript: `
         function onRotate(spin, flip, player, old_spin, old_flip)
+          if player == nil then
+            return
+          end
           if flip ~= old_flip then
             if flip > 175 and flip < 185 then
               self.setDescription("drafted by " .. Player[player].steam_name)
@@ -72,7 +75,6 @@ async function setup(s: State, api: Api) {
   broadcastToAll("Drafting phase has started");
   await waitTime(1);
   broadcastToAll("Flip a faction token to draft it");
-  await waitTime(1);
 
   // in sync view of who drafted
   let messages: string = "";
@@ -130,6 +132,19 @@ async function setup(s: State, api: Api) {
     },
     0.2,
     999999
+  );
+
+  // debug
+  await Promise.all(
+    tokens.slice(0, 6).map(async (t) => {
+      t.flip();
+      t.setDescription("drafted by " + Player.getPlayers()[0].steam_name);
+      await waitTime(1);
+      api.forward();
+      info.destruct();
+
+      return;
+    })
   );
 
   await waitTime(0.1);

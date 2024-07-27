@@ -6,24 +6,29 @@ export interface Connection {
   position?: any;
 }
 
+const ATREIDES = "atreides";
+const IXIAN = "ixian";
+const EMPEROR = "emperor";
+const FREMEN = "fremen";
+const IDUALI = "iduali";
+const BT = "bene-tleilaxu";
+const GUILD = "spacing-guild";
+const HARKONNEN = "harkonnen";
+const BG = "bene-gesserit";
+
 export const assignFactions = (data: Connection[]) => {
-  const hasAtreides = data.find((connection) => connection.left === "atreides" || connection.right === "atreides");
-  const hasIx = data.find((connection) => connection.left === "ixian" || connection.right === "ixian");
-  const hasEmperor = data.find((connection) => connection.left === "emperor" || connection.right === "emperor");
-  const hasFremen = data.find((connection) => connection.left === "fremen" || connection.right === "fremen");
-  const hasIduali = data.find((connection) => connection.left === "iduali" || connection.right === "iduali");
-  const hasTleilaxu = data.find(
-    (connection) => connection.left === "bene-tleilax" || connection.right === "bene-tleilax"
-  );
-  const hasSpacingGuild = data.find(
-    (connection) => connection.left === "spacing-guild" || connection.right === "spacing-guild"
-  );
+  const hasAtreides = data.find((connection) => connection.left === ATREIDES || connection.right === ATREIDES);
+  const hasIx = data.find((connection) => connection.left === IXIAN || connection.right === IXIAN);
+  const hasEmperor = data.find((connection) => connection.left === EMPEROR || connection.right === EMPEROR);
+  const hasFremen = data.find((connection) => connection.left === FREMEN || connection.right === FREMEN);
+  const hasIduali = data.find((connection) => connection.left === IDUALI || connection.right === IDUALI);
+  const hasTleilaxu = data.find((connection) => connection.left === BT || connection.right === BT);
+  const hasSpacingGuild = data.find((connection) => connection.left === GUILD || connection.right === GUILD);
   const preferred = [
-    //
-    hasAtreides ? "atreides" : hasIx ? "ixian" : "harkonnen",
-    "bene-tleilaxu",
-    hasFremen ? "fremen" : hasIduali ? "iduali" : "ixian",
-    hasEmperor ? "emperor" : hasSpacingGuild ? "spacing-guild" : "bene-gesserit",
+    hasAtreides ? ATREIDES : hasIx ? IXIAN : HARKONNEN,
+    BT,
+    hasFremen ? FREMEN : hasIduali ? IDUALI : IXIAN,
+    hasEmperor ? EMPEROR : hasSpacingGuild ? GUILD : BG,
   ];
 
   const scoring = preferred.reverse();
@@ -50,8 +55,9 @@ export const assignFactions = (data: Connection[]) => {
   let bestEvents: Connection | null = null;
   let bestBank: Connection | null = null;
 
+  // primary preference, in order
   if (hasAtreides) {
-    const name = "atreides";
+    const name = ATREIDES;
     const item = best.list.find((item) => item.left === name || item.right === name);
     if (item) {
       bestTreachery = item;
@@ -60,7 +66,7 @@ export const assignFactions = (data: Connection[]) => {
   }
 
   if (hasIx && !bestTreachery) {
-    const name = "atreides";
+    const name = IXIAN;
     const item = best.list.find((item) => item.left === name || item.right === name);
     if (item) {
       bestTreachery = item;
@@ -69,7 +75,7 @@ export const assignFactions = (data: Connection[]) => {
   }
 
   if (hasTleilaxu) {
-    const name = "bene-tleilaxu";
+    const name = BT;
     const item = best.list.find((item) => item.left === name || item.right === name);
     if (item) {
       bestTleilaxuTanks = item;
@@ -78,7 +84,7 @@ export const assignFactions = (data: Connection[]) => {
   }
 
   if (hasFremen) {
-    const name = "fremen";
+    const name = FREMEN;
     const item = best.list.find((item) => item.left === name || item.right === name);
     if (item) {
       bestEvents = item;
@@ -86,7 +92,7 @@ export const assignFactions = (data: Connection[]) => {
     }
   }
   if (hasIduali && !bestEvents) {
-    const name = "iduali";
+    const name = IDUALI;
     const item = best.list.find((item) => item.left === name || item.right === name);
     if (item) {
       bestEvents = item;
@@ -95,7 +101,7 @@ export const assignFactions = (data: Connection[]) => {
   }
 
   if (hasEmperor) {
-    const name = "emperor";
+    const name = EMPEROR;
     const item = best.list.find((item) => item.left === name || item.right === name);
     if (item) {
       bestBank = item;
@@ -103,7 +109,7 @@ export const assignFactions = (data: Connection[]) => {
     }
   }
   if (hasSpacingGuild && !bestBank) {
-    const name = "spacing-guild";
+    const name = GUILD;
     const item = best.list.find((item) => item.left === name || item.right === name);
     if (item) {
       bestBank = item;
@@ -111,6 +117,7 @@ export const assignFactions = (data: Connection[]) => {
     }
   }
 
+  // fallback
   if (!bestTreachery) {
     const item = best.list[0];
     bestTreachery = item;

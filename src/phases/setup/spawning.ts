@@ -11,10 +11,12 @@ import { defineFog } from "../../objects/fog";
 import { matchColorsToFactions, MyColors } from "../../utils/color";
 import { getAngleBetweenVectors, relativeTo } from "../../utils/relative";
 import { define, simple } from "../../objects/disc";
+import * as card from "../../objects/card";
 import { defineAlliance } from "../../objects/alliance";
 import { formatFactionName } from "../../utils/format";
 import { defineLine } from "../../objects/line";
 import { assignFactions, Connection } from "../../utils/slots";
+import { ObjectEntries } from "../../utils/iteration";
 
 const name = "spawn";
 
@@ -198,7 +200,7 @@ export const phase: Phase = {
 
     if (!assigned) return;
 
-    await Object.entries(assigned).reduce(async (acc, [item, slot]) => {
+    await ObjectEntries(assigned).reduce(async (acc, [item, slot]) => {
       await acc;
       if (slot.angle) {
         await Forge.spawnObject(
@@ -214,49 +216,33 @@ export const phase: Phase = {
             scale: Vector(1.55, 9, 1.55),
           }
         );
-        await waitFrames(2);
+        if (item === "treachery" && s.data) {
+          const data = s.data;
+          const cards = Object.values(s.data.treachery).map((front) => ({
+            front,
+            back: data.backs.treachery,
+          }));
+          await Forge.spawnObject(card.define(cards), {
+            ...relativeTo(
+              [slot.position, Vector(0, slot.angle, 0)],
+              [Vector(-0.8, 0, -0.8), Vector(0, 0, 0)] // offset
+            ),
+            scale: { x: 0.7, y: 0.7, z: 0.7 },
+          });
+          await Forge.spawnObject(card.define(cards[0]), {
+            ...relativeTo(
+              [slot.position, Vector(0, slot.angle, 0)],
+              [Vector(0.8, 0, -0.8), Vector(0, 0, 0)] // offset
+            ),
+            scale: { x: 0.7, y: 0.7, z: 0.7 },
+          });
+        }
+        await waitFrames(1);
       }
       return;
     }, Promise.resolve());
 
-    const arch = getArchPositions(center, 7.4, 5.5, 9, 90, true);
-
-    await arch.reduce(async (acc, position, index) => {
-      await acc;
-      await Forge.spawnObject(
-        {
-          ...simple({ name: index.toString() }),
-          Locked: true,
-          Tooltip: true,
-          ColorDiffuse: MyColors.dark,
-        },
-        {
-          position: Vector(position.x, 1.12, position.z),
-          rotation: Vector(0, 0, 0),
-          scale: Vector(0.4, 9, 0.4),
-        }
-      );
-      await waitFrames(2);
-      return;
-    }, Promise.resolve());
-    await arch.reduce(async (acc, position, index) => {
-      await acc;
-      await Forge.spawnObject(
-        {
-          ...simple({ name: index.toString() }),
-          Locked: true,
-          Tooltip: true,
-          ColorDiffuse: MyColors.muted,
-        },
-        {
-          position: Vector(position.x, 1.125, position.z),
-          rotation: Vector(0, 0, 0),
-          scale: Vector(0.35, 9, 0.35),
-        }
-      );
-      await waitFrames(2);
-      return;
-    }, Promise.resolve());
+    await spawnPhases();
 
     interface Location {
       name: string;
@@ -550,3 +536,47 @@ export const phase: Phase = {
     return true;
   },
 };
+
+async function spawnPhases() {
+  const center = Vector(0, 0, 0);
+  const arch = getArchPositions(center, 7.4, 5.5, 9, 90, true);
+
+  await arch.reduce(async (acc, position, index) => {
+    await acc;
+    await Forge.spawnObject(
+      {
+        ...simple({ name: index.toString() }),
+        Locked: true,
+        Tooltip: true,
+        ColorDiffuse: MyColors.dark,
+      },
+      {
+        position: Vector(position.x, 1.12, position.z),
+        rotation: Vector(0, 0, 0),
+        scale: Vector(0.4, 9, 0.4),
+      }
+    );
+    await waitFrames(2);
+    return;
+  }, Promise.resolve());
+  await arch.reduce(async (acc, position, index) => {
+    await acc;
+    await Forge.spawnObject(
+      {
+        ...simple({ name: index.toString() }),
+        Locked: true,
+        Tooltip: true,
+        ColorDiffuse: MyColors.muted,
+      },
+      {
+        position: Vector(position.x, 1.125, position.z),
+        rotation: Vector(0, 0, 0),
+        scale: Vector(0.35, 9, 0.35),
+      }
+    );
+    await waitFrames(2);
+    return;
+  }, Promise.resolve());
+
+  return;
+}
