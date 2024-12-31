@@ -135,17 +135,17 @@ async function setup(s: State, api: Api) {
   );
 
   // debug
-  await Promise.all(
-    tokens.slice(0, 6).map(async (t) => {
-      t.flip();
-      t.setDescription("drafted by " + Player.getPlayers()[0].steam_name);
-      await waitTime(1);
-      api.forward();
-      info.destruct();
+  // await Promise.all(
+  //   tokens.slice(0, 6).map(async (t) => {
+  //     t.flip();
+  //     t.setDescription("drafted by " + Player.getPlayers()[0].steam_name);
+  //     await waitTime(1);
+  //     api.forward();
+  //     info.destruct();
 
-      return;
-    })
-  );
+  //     return;
+  //   })
+  // );
 
   await waitTime(0.1);
 
