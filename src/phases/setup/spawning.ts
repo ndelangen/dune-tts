@@ -510,7 +510,7 @@ export const phase: Phase = {
         await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.6, width: 3, url: faction.logo }), {
           ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.37, 4.9), Vector(0, 0, 0)]),
         }).then((t) => (t.interactable = false));
-        await Forge.spawnObject(defineLine({ color: Color(1, 1, 1), length: 0.6, width: 4 }), {
+        await Forge.spawnObject(defineLine({ color: Color(MyColors.muted), length: 0.6, width: 4 }), {
           ...relativeTo([pos, Vector(0, angle, 0)], [Vector(0, -0.38, 4.9), Vector(0, 0, 0)]),
         }).then((t) => (t.interactable = false));
 
